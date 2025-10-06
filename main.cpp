@@ -1,49 +1,49 @@
 #include "main.h"
 
-#include "window/window.h"
-#include "renderer/renderer.h"
-#include "input/input.h"
-#include "fileSystem/fileSystem.h"
+#include "src/window/window.h"
+#include "src/renderer/renderer.h"
+#include "src/input/input.h"
+#include "src/fileSystem/fileSystem.h"
 
-Application _application;
+Application application;
 
 void Application::init() {
 	std::cout << "Initializing application..." << std::endl;
 
-	_window.init();
-	_renderer.init();
+	application.window.init();
+	application.renderer.init();
 
-	_application.running = true;
+	application.running = true;
 
-	while (_application.running) {
-		_application.loop();
+	while (application.running) {
+		application.loop();
 	}
 }
 
 void Application::loop() {
-	_window.poll();
+	application.window.poll();
 
-	if (_window.shouldClose()) {
-		_application.cleanup();
+	if (application.window.shouldClose()) {
+		application.cleanup();
 
 		return;
 	}
 
-	if (_application.running) {
-		_renderer.drawFrame();
+	if (application.running) {
+		application.renderer.drawFrame();
 	}
 }
 
 void Application::cleanup() {
-	_application.running = false;
+	application.running = false;
 
-	_window.cleanup();
-	_renderer.cleanup();
+	application.window.cleanup();
+	application.renderer.cleanup();
 }
 
 int main() {
 	try {
-		_application.init();
+		application.init();
 	}
 	catch (const std::runtime_error& e) {
 		std::cerr << "Error: " << e.what() << std::endl;

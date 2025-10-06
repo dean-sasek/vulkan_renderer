@@ -71,6 +71,22 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)builds\builds\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)builds\intermediate\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)builds\builds\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)builds\intermediate\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)builds\builds\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)builds\intermediate\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)builds\builds\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)builds\intermediate\$(Configuration)\</IntDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -140,24 +156,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="fileSystem\fileSystem.cpp" />
-    <ClCompile Include="input\input.cpp" />
+    <ClCompile Include="src\fileSystem\fileSystem.cpp" />
+    <ClCompile Include="src\input\input.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="renderer\renderer.cpp" />
-    <ClCompile Include="renderer\swapchain.cpp" />
-    <ClCompile Include="window\window.cpp" />
+    <ClCompile Include="src\logger\logger.cpp" />
+    <ClCompile Include="src\renderer\renderer.cpp" />
+    <ClCompile Include="src\renderer\swapchain.cpp" />
+    <ClCompile Include="src\window\window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="fileSystem\fileSystem.h" />
-    <ClInclude Include="input\input.h" />
+    <ClInclude Include="src\fileSystem\fileSystem.h" />
+    <ClInclude Include="src\input\input.h" />
     <ClInclude Include="main.h" />
-    <ClInclude Include="renderer\renderer.h" />
-    <ClInclude Include="renderer\swapchain.h" />
-    <ClInclude Include="window\window.h" />
+    <ClInclude Include="src\logger\logger.h" />
+    <ClInclude Include="src\renderer\renderer.h" />
+    <ClInclude Include="src\renderer\swapchain.h" />
+    <ClInclude Include="src\window\window.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="renderer\shaders\shader.frag" />
-    <None Include="renderer\shaders\shader.vert" />
+    <None Include="src\renderer\shaders\shader.frag" />
+    <None Include="src\renderer\shaders\shader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

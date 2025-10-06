@@ -18,19 +18,22 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\renderer.cpp">
+    <ClCompile Include="src\renderer\renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="window\window.cpp">
+    <ClCompile Include="src\window\window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="input\input.cpp">
+    <ClCompile Include="src\input\input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fileSystem\fileSystem.cpp">
+    <ClCompile Include="src\fileSystem\fileSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\swapchain.cpp">
+    <ClCompile Include="src\renderer\swapchain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logger\logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,24 +41,27 @@
     <ClInclude Include="main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\renderer.h">
+    <ClInclude Include="src\renderer\renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="window\window.h">
+    <ClInclude Include="src\window\window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="input\input.h">
+    <ClInclude Include="src\input\input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fileSystem\fileSystem.h">
+    <ClInclude Include="src\fileSystem\fileSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\swapchain.h">
+    <ClInclude Include="src\renderer\swapchain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logger\logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="renderer\shaders\shader.frag" />
-    <None Include="renderer\shaders\shader.vert" />
+    <None Include="src\renderer\shaders\shader.frag" />
+    <None Include="src\renderer\shaders\shader.vert" />
   </ItemGroup>
 </Project>

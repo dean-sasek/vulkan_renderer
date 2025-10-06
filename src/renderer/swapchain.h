@@ -1,8 +1,11 @@
 #pragma once
 #define swapchain_h
 
-#include "vulkan/vulkan.h"
 #include <vector>
+#include <iostream>
+
+#include "vulkan/vulkan.h"
+#include "../window/window.h"
 
 class Swapchain {
 public:
@@ -39,5 +42,3 @@ private:
 	VkPresentModeKHR chooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 	VkExtent2D chooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 };
-
-extern Swapchain _swapchain;

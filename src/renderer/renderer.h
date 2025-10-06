@@ -7,9 +7,14 @@
 #include <cstdint>
 #include <limits>
 #include <algorithm>
+#include <iostream>
+#include <cstring>
 
 #include "vulkan/vulkan.h"
+#include "../window/window.h"
+#include "../fileSystem/fileSystem.h"
 #include "swapchain.h"
+#include "../logger/logger.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR
 
@@ -125,5 +130,3 @@ class Renderer {
 		std::vector<VkFence> inFlightFences;
 		void createSyncObjects();
 };
-
-extern Renderer _renderer;

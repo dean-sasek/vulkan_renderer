@@ -1,7 +1,5 @@
 #include "fileSystem.h"
 
-#include <iostream>
-
 FileSystem fileSystem;
 
 std::vector<char> FileSystem::readFile(const std::string& fileName) {

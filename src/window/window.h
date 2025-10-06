@@ -33,5 +33,3 @@ class Window {
 
 		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 };
-
-extern Window _window;
