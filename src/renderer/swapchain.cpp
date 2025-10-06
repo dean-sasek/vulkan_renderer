@@ -1,47 +1,45 @@
-#include "swapchain.h"
-#include "renderer.h"
-#include "../../main.h"
+#include "../application/application.h"
 
-VkFormat Swapchain::getImageFormat() {
+VkFormat Swapchain::getImageFormat(Application& application) {
 	return application.swapchain.imageFormat;
 }
 
-VkExtent2D Swapchain::getExtent() {
+VkExtent2D Swapchain::getExtent(Application& application) {
 	return application.swapchain.imageExtent;
 }
 
-std::vector<VkFramebuffer> Swapchain::getFramebuffers() {
+std::vector<VkFramebuffer> Swapchain::getFramebuffers(Application& application) {
 	return application.swapchain.framebuffers;
 }
 
-VkSwapchainKHR Swapchain::getSwapchain() {
+VkSwapchainKHR Swapchain::getSwapchain(Application& application) {
 	return application.swapchain.swapchain;
 }
 
-void Swapchain::cleanup() {
+void Swapchain::cleanup(Application& application) {
 	log_info("Cleaning up swapchain...");
 
 	for (auto framebuffer : application.swapchain.framebuffers) {
-		vkDestroyFramebuffer(application.renderer.getDevice(), framebuffer, nullptr);
+		vkDestroyFramebuffer(application.renderer.getDevice(application), framebuffer, nullptr);
 	}
 
 	for (auto imageView : application.swapchain.imageViews) {
-		vkDestroyImageView(application.renderer.getDevice(), imageView, nullptr);
+		vkDestroyImageView(application.renderer.getDevice(application), imageView, nullptr);
 	}
 
-	vkDestroySwapchainKHR(application.renderer.getDevice(), application.swapchain.swapchain, nullptr);
+	vkDestroySwapchainKHR(application.renderer.getDevice(application), application.swapchain.swapchain, nullptr);
 
 	log_info("Cleaned up swapchain!");
 }
 
-void Swapchain::createSwapchain() {
+void Swapchain::createSwapchain(Application& application) {
 	Swapchain& swapchain = application.swapchain;
 
-	Swapchain::swapchainSupportDetails swapchainSupportDetails = swapchain.querySwapchainSupport(application.renderer.getPhysicalDevice());
+	Swapchain::swapchainSupportDetails swapchainSupportDetails = swapchain.querySwapchainSupport(application, application.renderer.getPhysicalDevice(application));
 
 	VkSurfaceFormatKHR surfaceFormat = swapchain.chooseSwapchainSurfaceFormat(swapchainSupportDetails.surfaceFormats);
 	VkPresentModeKHR presentMode = swapchain.chooseSwapchainPresentMode(swapchainSupportDetails.presentModes);
-	VkExtent2D swapChainExtent = swapchain.chooseSwapchainExtent(swapchainSupportDetails.surfaceCapabilities);
+	VkExtent2D swapChainExtent = swapchain.chooseSwapchainExtent(application, swapchainSupportDetails.surfaceCapabilities);
 
 	uint32_t imageCount = swapchainSupportDetails.surfaceCapabilities.minImageCount + 1;
 
@@ -59,7 +57,7 @@ void Swapchain::createSwapchain() {
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	Renderer::queueFamilyIndices indices = application.renderer.findQueueFamilies(application.renderer.getPhysicalDevice());
+	Renderer::queueFamilyIndices indices = application.renderer.findQueueFamilies(application, application.renderer.getPhysicalDevice(application));
 	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
 	if (indices.graphicsFamily != indices.presentFamily) {
@@ -79,7 +77,7 @@ void Swapchain::createSwapchain() {
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	VkResult result = vkCreateSwapchainKHR(application.renderer.getDevice(), &createInfo, nullptr, &swapchain.swapchain);
+	VkResult result = vkCreateSwapchainKHR(application.renderer.getDevice(application), &createInfo, nullptr, &swapchain.swapchain);
 
 	if (result != VK_SUCCESS) {
 		log_error("Failed to create swapchain!");
@@ -88,9 +86,9 @@ void Swapchain::createSwapchain() {
 		log_info("Successfully created swapchain!");
 	}
 
-	vkGetSwapchainImagesKHR(application.renderer.getDevice(), swapchain.swapchain, &imageCount, nullptr);
+	vkGetSwapchainImagesKHR(application.renderer.getDevice(application), swapchain.swapchain, &imageCount, nullptr);
 	swapchain.images.resize(imageCount);
-	vkGetSwapchainImagesKHR(application.renderer.getDevice(), swapchain.swapchain, &imageCount, swapchain.images.data());
+	vkGetSwapchainImagesKHR(application.renderer.getDevice(application), swapchain.swapchain, &imageCount, swapchain.images.data());
 
 	swapchain.imageFormat = surfaceFormat.format;
 	swapchain.imageExtent = swapChainExtent;
@@ -98,7 +96,7 @@ void Swapchain::createSwapchain() {
 	application.swapchain = swapchain;
 }
 
-void Swapchain::recreateSwapchain() {
+void Swapchain::recreateSwapchain(Application& application) {
 	int width = 0, height = 0;
 	glfwGetFramebufferSize(application.window.glfwWindow, &width, &height);
 	while (width == 0 || height == 0) {
@@ -106,16 +104,16 @@ void Swapchain::recreateSwapchain() {
 		glfwWaitEvents();
 	}
 
-	vkDeviceWaitIdle(application.renderer.getDevice());
+	vkDeviceWaitIdle(application.renderer.getDevice(application));
 
-	application.swapchain.cleanup();
+	application.swapchain.cleanup(application);
 
-	application.swapchain.createSwapchain();
-	application.swapchain.createImageViews();
-	application.swapchain.createFramebuffers();
+	application.swapchain.createSwapchain(application);
+	application.swapchain.createImageViews(application);
+	application.swapchain.createFramebuffers(application);
 }
 
-void Swapchain::createImageViews() {
+void Swapchain::createImageViews(Application& application) {
 	application.swapchain.imageViews.resize(application.swapchain.images.size());
 
 	for (size_t i = 0; i < application.swapchain.images.size(); i++) {
@@ -134,13 +132,13 @@ void Swapchain::createImageViews() {
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(application.renderer.getDevice(), &createInfo, nullptr, &application.swapchain.imageViews[i]) != VK_SUCCESS) {
+		if (vkCreateImageView(application.renderer.getDevice(application), &createInfo, nullptr, &application.swapchain.imageViews[i]) != VK_SUCCESS) {
 			log_error("failed to create image views!");
 		}
 	}
 }
 
-Swapchain::swapchainSupportDetails Swapchain::querySwapchainSupport(VkPhysicalDevice physicalDevice) {
+Swapchain::swapchainSupportDetails Swapchain::querySwapchainSupport(Application& application, VkPhysicalDevice physicalDevice) {
 	Swapchain::swapchainSupportDetails swapchainSupportDetails;
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, application.renderer.surface, &swapchainSupportDetails.surfaceCapabilities);
@@ -164,7 +162,7 @@ Swapchain::swapchainSupportDetails Swapchain::querySwapchainSupport(VkPhysicalDe
 	return swapchainSupportDetails;
 }
 
-void Swapchain::createFramebuffers() {
+void Swapchain::createFramebuffers(Application& application) {
 	application.swapchain.framebuffers.resize(application.swapchain.imageViews.size());
 
 	for (size_t i = 0; i < application.swapchain.imageViews.size(); i++) {
@@ -174,14 +172,14 @@ void Swapchain::createFramebuffers() {
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = application.renderer.getRenderPass();
+		framebufferInfo.renderPass = application.renderer.getRenderPass(application);
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments = attachments;
 		framebufferInfo.width = application.swapchain.imageExtent.width;
 		framebufferInfo.height = application.swapchain.imageExtent.height;
 		framebufferInfo.layers = 1;
 
-		if (vkCreateFramebuffer(application.renderer.getDevice(), &framebufferInfo, nullptr, &application.swapchain.framebuffers[i]) != VK_SUCCESS) {
+		if (vkCreateFramebuffer(application.renderer.getDevice(application), &framebufferInfo, nullptr, &application.swapchain.framebuffers[i]) != VK_SUCCESS) {
 			log_error("Failed to create framebuffer!");
 		}
 	}
@@ -207,7 +205,7 @@ VkPresentModeKHR Swapchain::chooseSwapchainPresentMode(const std::vector<VkPrese
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D Swapchain::chooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities) {
+VkExtent2D Swapchain::chooseSwapchainExtent(Application& application, const VkSurfaceCapabilitiesKHR& surfaceCapabilities) {
 	#ifdef max
 	#undef max
 	#endif

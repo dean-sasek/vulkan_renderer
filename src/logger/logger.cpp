@@ -1,5 +1,7 @@
 #include "logger.h"
 
+Logger logger;
+
 void Logger::log(Logger::level level, const std::string& message) {
 	std::ostringstream logStream;
 

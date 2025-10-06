@@ -1,16 +1,16 @@
 #include "renderer.h"
-#include "../../main.h"
+#include "../application/application.h"
 
-VkPhysicalDevice Renderer::getPhysicalDevice() {
+VkPhysicalDevice Renderer::getPhysicalDevice(Application& application) {
 	return application.renderer.physicalDevice;
 }
 
 
-VkDevice Renderer::getDevice() {
+VkDevice Renderer::getDevice(Application& application) {
 	return application.renderer.device;
 }
 
-void Renderer::createSurface() {
+void Renderer::createSurface(Application& application) {
 	log_info("Creating window surface...");
 
 	VkResult result = glfwCreateWindowSurface(application.renderer.instance, application.window.glfwWindow, nullptr, &application.renderer.surface);
@@ -23,12 +23,12 @@ void Renderer::createSurface() {
 	}
 }
 
-void Renderer::setPhysicalDevice(VkPhysicalDevice physicalDevice) {
+void Renderer::setPhysicalDevice(Application& application, VkPhysicalDevice physicalDevice) {
 	application.renderer.physicalDevice = physicalDevice;
 }
 
-void Renderer::createLogicalDevice() {
-	Renderer::queueFamilyIndices indices = application.renderer.findQueueFamilies(application.renderer.getPhysicalDevice());
+void Renderer::createLogicalDevice(Application& application) {
+	Renderer::queueFamilyIndices indices = application.renderer.findQueueFamilies(application, application.renderer.getPhysicalDevice(application));
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 
@@ -69,36 +69,36 @@ void Renderer::createLogicalDevice() {
 	}
 }
 
-VkRenderPass Renderer::getRenderPass() {
+VkRenderPass Renderer::getRenderPass(Application& application) {
 	return application.renderer.renderPass;
 }
 
-void Renderer::init() {
+void Renderer::init(Application& application) {
 	log_info("Initializing renderer...");
 
-	application.renderer.createInstance();
-	application.renderer.setupDebugMessenger();
-	application.renderer.createSurface();
-	application.renderer.pickPhysicalDevice();
-	application.renderer.createLogicalDevice();
-	application.swapchain.createSwapchain();
-	application.swapchain.createImageViews();
-	application.renderer.createRenderPass();
-	application.renderer.createGraphicsPipeline();
-	application.swapchain.createFramebuffers();
-	application.renderer.createCommandPool();
-	application.renderer.createCommandBuffers();
-	application.renderer.createSyncObjects();
+	application.renderer.createInstance(application);
+	application.renderer.setupDebugMessenger(application);
+	application.renderer.createSurface(application);
+	application.renderer.pickPhysicalDevice(application);
+	application.renderer.createLogicalDevice(application);
+	application.swapchain.createSwapchain(application);
+	application.swapchain.createImageViews(application);
+	application.renderer.createRenderPass(application);
+	application.renderer.createGraphicsPipeline(application);
+	application.swapchain.createFramebuffers(application);
+	application.renderer.createCommandPool(application);
+	application.renderer.createCommandBuffers(application);
+	application.renderer.createSyncObjects(application);
 
 	log_info("Renderer initialized!");
 }
 
-void Renderer::createGraphicsPipeline() {
+void Renderer::createGraphicsPipeline(Application& application) {
 	auto vertexShaderCode = fileSystem.readFile("src/renderer/shaders/vert.spv");
 	auto fragmentShaderCode = fileSystem.readFile("src/renderer/shaders/frag.spv");
 
-	VkShaderModule vertexShaderModule = application.renderer.createShaderModule(vertexShaderCode);
-	VkShaderModule fragmentShaderModule = application.renderer.createShaderModule(fragmentShaderCode);
+	VkShaderModule vertexShaderModule = application.renderer.createShaderModule(application, vertexShaderCode);
+	VkShaderModule fragmentShaderModule = application.renderer.createShaderModule(application, fragmentShaderCode);
 
 	VkPipelineShaderStageCreateInfo vertexShaderStageCreateInfo{};
 	vertexShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -232,7 +232,7 @@ void Renderer::createGraphicsPipeline() {
 	vkDestroyShaderModule(application.renderer.device, fragmentShaderModule, nullptr);
 }
 
-VkShaderModule Renderer::createShaderModule(const std::vector<char>& shaderCode) {
+VkShaderModule Renderer::createShaderModule(Application& application, const std::vector<char>& shaderCode) {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	createInfo.codeSize = shaderCode.size();
@@ -252,9 +252,9 @@ VkShaderModule Renderer::createShaderModule(const std::vector<char>& shaderCode)
 	}
 };
 
-void Renderer::createRenderPass() {
+void Renderer::createRenderPass(Application& application) {
 	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = application.swapchain.getImageFormat();
+	colorAttachment.format = application.swapchain.getImageFormat(application);
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -297,8 +297,8 @@ void Renderer::createRenderPass() {
 	}
 }
 
-void Renderer::createCommandPool() {
-	Renderer::queueFamilyIndices queueFamilyIndices = application.renderer.findQueueFamilies(application.renderer.physicalDevice);
+void Renderer::createCommandPool(Application& application) {
+	Renderer::queueFamilyIndices queueFamilyIndices = application.renderer.findQueueFamilies(application, application.renderer.physicalDevice);
 
 	VkCommandPoolCreateInfo commandPoolCreateInfo{};
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -315,7 +315,7 @@ void Renderer::createCommandPool() {
 	}
 }
 
-void Renderer::createCommandBuffers() {
+void Renderer::createCommandBuffers(Application& application) {
 	application.renderer.commandBuffers.resize(application.renderer.MAX_FRAMES_IN_FLIGHT);
 
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
@@ -334,7 +334,7 @@ void Renderer::createCommandBuffers() {
 	}
 }
 
-void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+void Renderer::recordCommandBuffer(Application& application, VkCommandBuffer commandBuffer, uint32_t imageIndex) {
 	VkCommandBufferBeginInfo commandBufferBeginInfo{};
 	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	commandBufferBeginInfo.flags = 0;
@@ -349,9 +349,9 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	VkRenderPassBeginInfo renderPassBeginInfo{};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassBeginInfo.renderPass = application.renderer.renderPass;
-	renderPassBeginInfo.framebuffer = application.swapchain.getFramebuffers()[imageIndex];
+	renderPassBeginInfo.framebuffer = application.swapchain.getFramebuffers(application)[imageIndex];
 	renderPassBeginInfo.renderArea.offset = { 0, 0 };
-	renderPassBeginInfo.renderArea.extent = application.swapchain.getExtent();
+	renderPassBeginInfo.renderArea.extent = application.swapchain.getExtent(application);
 
 	VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 	renderPassBeginInfo.clearValueCount = 1;
@@ -364,15 +364,15 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(application.swapchain.getExtent().width);
-	viewport.height = static_cast<float>(application.swapchain.getExtent().height);
+	viewport.width = static_cast<float>(application.swapchain.getExtent(application).width);
+	viewport.height = static_cast<float>(application.swapchain.getExtent(application).height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 	VkRect2D scissor{};
 	scissor.offset = { 0, 0 };
-	scissor.extent = application.swapchain.getExtent();
+	scissor.extent = application.swapchain.getExtent(application);
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
@@ -386,7 +386,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	};
 }
 
-void Renderer::createSyncObjects() {
+void Renderer::createSyncObjects(Application& application) {
 	application.renderer.imageAvailableSemaphores.resize(application.renderer.MAX_FRAMES_IN_FLIGHT);
 	application.renderer.renderFinishedSemaphores.resize(application.renderer.MAX_FRAMES_IN_FLIGHT);
 	application.renderer.inFlightFences.resize(application.renderer.MAX_FRAMES_IN_FLIGHT);
@@ -412,12 +412,12 @@ void Renderer::createSyncObjects() {
 	}
 }
 
-void Renderer::cleanup() {
+void Renderer::cleanup(Application& application) {
 	log_info("Cleaning up renderer...");
 
 	vkDeviceWaitIdle(application.renderer.device);
 
-	application.swapchain.cleanup();
+	application.swapchain.cleanup(application);
 
 	vkDestroyPipeline(application.renderer.device, application.renderer.graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(application.renderer.device, application.renderer.pipelineLayout, nullptr);
@@ -444,15 +444,15 @@ void Renderer::cleanup() {
 	log_info("Renderer cleaned up!");
 }
 
-void Renderer::drawFrame() {
+void Renderer::drawFrame(Application& application) {
 	vkWaitForFences(application.renderer.device, 1, &application.renderer.inFlightFences[application.renderer.currentFrame], VK_TRUE, UINT64_MAX);
 
 	uint32_t imageIndex;
-	VkResult acquireNextImageResult = vkAcquireNextImageKHR(application.renderer.device, application.swapchain.getSwapchain(), UINT64_MAX, application.renderer.imageAvailableSemaphores[application.renderer.currentFrame], VK_NULL_HANDLE, &imageIndex);
+	VkResult acquireNextImageResult = vkAcquireNextImageKHR(application.renderer.device, application.swapchain.getSwapchain(application), UINT64_MAX, application.renderer.imageAvailableSemaphores[application.renderer.currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 	if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR || application.renderer.framebufferResized) {
 		application.renderer.framebufferResized = false;
-		application.swapchain.recreateSwapchain();
+		application.swapchain.recreateSwapchain(application);
 
 		log_info("Swap chain out of date, recreating...");
 
@@ -465,7 +465,7 @@ void Renderer::drawFrame() {
 	vkResetFences(application.renderer.device, 1, &application.renderer.inFlightFences[application.renderer.currentFrame]);
 
 	vkResetCommandBuffer(application.renderer.commandBuffers[currentFrame], 0);
-	application.renderer.recordCommandBuffer(application.renderer.commandBuffers[currentFrame], imageIndex);
+	application.renderer.recordCommandBuffer(application, application.renderer.commandBuffers[currentFrame], imageIndex);
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -495,7 +495,7 @@ void Renderer::drawFrame() {
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
 
-	VkSwapchainKHR swapChains[] = { application.swapchain.getSwapchain()};
+	VkSwapchainKHR swapChains[] = { application.swapchain.getSwapchain(application)};
 	
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
@@ -507,8 +507,8 @@ void Renderer::drawFrame() {
 	application.renderer.currentFrame = (application.renderer.currentFrame + 1) % application.renderer.MAX_FRAMES_IN_FLIGHT;
 }
 
-void Renderer::createInstance() {
-	if (application.renderer.enableValidationLayers && !application.renderer.checkValidationLayerSupport()) {
+void Renderer::createInstance(Application& application) {
+	if (application.renderer.enableValidationLayers && !application.renderer.checkValidationLayerSupport(application)) {
 		log_error("Validation layers requested, but not supported!");
 	}
 	else {
@@ -518,7 +518,7 @@ void Renderer::createInstance() {
 	VkApplicationInfo applicationInfo{};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 
-	applicationInfo.pApplicationName = application.window.getWindowName();
+	applicationInfo.pApplicationName = application.window.getWindowName(application);
 	applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 
 	applicationInfo.pEngineName = "None";
@@ -530,7 +530,7 @@ void Renderer::createInstance() {
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &applicationInfo;
 
-	auto extensions = application.renderer.getRequiredExtensions();
+	auto extensions = application.renderer.getRequiredExtensions(application);
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
@@ -539,7 +539,7 @@ void Renderer::createInstance() {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
 		createInfo.ppEnabledLayerNames = application.renderer.validationLayers.data();
 
-		application.renderer.populateDebugMessengerCreateInfo(debugCreateInfo);
+		application.renderer.populateDebugMessengerCreateInfo(application, debugCreateInfo);
 		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
 	}
 	else {
@@ -555,7 +555,7 @@ void Renderer::createInstance() {
 	}
 }
 
-bool Renderer::checkValidationLayerSupport() {
+bool Renderer::checkValidationLayerSupport(Application& application) {
 	uint32_t layerCount;
 	
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -582,7 +582,7 @@ bool Renderer::checkValidationLayerSupport() {
 	return true;
 }
 
-std::vector<const char*> Renderer::getRequiredExtensions() {
+std::vector<const char*> Renderer::getRequiredExtensions(Application& application) {
 	application.renderer.glfwExtensions = glfwGetRequiredInstanceExtensions(&application.renderer.glfwExtensionCount);
 
 	std::vector<const char*> extensions(application.renderer.glfwExtensions, application.renderer.glfwExtensions + application.renderer.glfwExtensionCount);
@@ -595,17 +595,17 @@ std::vector<const char*> Renderer::getRequiredExtensions() {
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-	log_info(std::string("Validation layer: ") + pCallbackData->pMessage);
+	//log_info(std::string("Validation layer: ") + pCallbackData->pMessage);
 
 	return VK_FALSE;
 }
 
-void Renderer::setupDebugMessenger() {
+void Renderer::setupDebugMessenger(Application& application) {
 	if (!application.renderer.enableValidationLayers) return;
 
 	VkDebugUtilsMessengerCreateInfoEXT createInfo{};
 
-	application.renderer.populateDebugMessengerCreateInfo(createInfo);
+	application.renderer.populateDebugMessengerCreateInfo(application, createInfo);
 
 	if (application.renderer.createDebugUtilsMessengerExt(application.renderer.instance, &createInfo, nullptr, &application.renderer.debugMessenger) != VK_SUCCESS) {
 		log_error("Failed to create debug messenger!");
@@ -638,7 +638,7 @@ void Renderer::destroyDebugUtilsMessengerExt(VkInstance instance, VkDebugUtilsMe
 	}
 }
 
-void Renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT createInfo) {
+void Renderer::populateDebugMessengerCreateInfo(Application& application, VkDebugUtilsMessengerCreateInfoEXT createInfo) {
 	createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -646,7 +646,7 @@ void Renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoE
 	createInfo.pfnUserCallback = application.renderer.debugCallback;
 }
 
-void Renderer::pickPhysicalDevice() {
+void Renderer::pickPhysicalDevice(Application& application) {
 	uint32_t deviceCount = 0;
 
 	vkEnumeratePhysicalDevices(application.renderer.instance, &deviceCount, nullptr);
@@ -659,8 +659,8 @@ void Renderer::pickPhysicalDevice() {
 	vkEnumeratePhysicalDevices(application.renderer.instance, &deviceCount, devices.data());
 
 	for (const auto& device : devices) {
-		if (application.renderer.isPhysicalDeviceSuitable(device)) {
-			application.renderer.setPhysicalDevice(device);
+		if (application.renderer.isPhysicalDeviceSuitable(application, device)) {
+			application.renderer.setPhysicalDevice(application, device);
 
 			log_info("Successfully picked physical device!");
 
@@ -668,27 +668,27 @@ void Renderer::pickPhysicalDevice() {
 		}
 	}
 
-	if (application.renderer.getPhysicalDevice() == VK_NULL_HANDLE) {
+	if (application.renderer.getPhysicalDevice(application) == VK_NULL_HANDLE) {
 		log_error("Failed to find a suitable physical device!");
 	}
 }
 
-bool Renderer::isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice) {
-	application.renderer.indices = application.renderer.findQueueFamilies(physicalDevice);
+bool Renderer::isPhysicalDeviceSuitable(Application& application, VkPhysicalDevice physicalDevice) {
+	application.renderer.indices = application.renderer.findQueueFamilies(application, physicalDevice);
 
-	bool extensionsSupported = application.renderer.checkPhysicalDeviceExtensionSupport(physicalDevice);
+	bool extensionsSupported = application.renderer.checkPhysicalDeviceExtensionSupport(application, physicalDevice);
 
 	bool swapChainAdequate = false;
 	
 	if (extensionsSupported) {
-		Swapchain::swapchainSupportDetails swapchainSupport = application.swapchain.querySwapchainSupport(physicalDevice);
+		Swapchain::swapchainSupportDetails swapchainSupport = application.swapchain.querySwapchainSupport(application, physicalDevice);
 		swapChainAdequate = !swapchainSupport.surfaceFormats.empty() && !swapchainSupport.presentModes.empty();
 	}
 
 	return application.renderer.indices.isComplete() && extensionsSupported && swapChainAdequate;
 }
 
-bool Renderer::checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
+bool Renderer::checkPhysicalDeviceExtensionSupport(Application& application, VkPhysicalDevice physicalDevice) {
 	uint32_t extensionCount;
 
 	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
@@ -705,7 +705,7 @@ bool Renderer::checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevi
 	return requiredExtensions.empty();
 }
 
-Renderer::queueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice physicalDevice) {
+Renderer::queueFamilyIndices Renderer::findQueueFamilies(Application& application, VkPhysicalDevice physicalDevice) {
 	Renderer::queueFamilyIndices indices;
 
 	uint32_t queueFamilyCount = 0;
@@ -719,7 +719,7 @@ Renderer::queueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice physic
 		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 			indices.graphicsFamily = i;
 
-			log_info("Graphics support found!");
+			//log_info("Graphics support found!");
 
 			VkBool32 presentSupport = false;
 			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, application.renderer.surface, &presentSupport);

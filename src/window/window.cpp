@@ -1,17 +1,14 @@
 #include "window.h"
+#include "../application/application.h"
 
-#include "../input/input.h"
-#include "../renderer/renderer.h"
-#include "../../main.h"
-
-void Window::init() {
+void Window::init(Application& application) {
 	log_info("Initializing window...");
 
 	glfwInit();
 
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-	application.window.glfwWindow = glfwCreateWindow(application.window.getWindowWidth(), application.window.getWindowHeight(), application.window.getWindowName(), nullptr, nullptr);
+	application.window.glfwWindow = glfwCreateWindow(application.window.getWindowWidth(application), application.window.getWindowHeight(application), application.window.getWindowName(application), nullptr, nullptr);
 	glfwSetWindowUserPointer(application.window.glfwWindow, this);
 	glfwSetFramebufferSizeCallback(application.window.glfwWindow, application.window.framebufferResizeCallback);
 
@@ -25,17 +22,17 @@ void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height
 	renderer->framebufferResized = true;
 }
 
-bool Window::shouldClose() {
+bool Window::shouldClose(Application& application) {
 	return glfwWindowShouldClose(application.window.glfwWindow);
 }
 
-void Window::poll() {
+void Window::poll(Application& application) {
 	glfwPollEvents();
 
-	application.input.loop(application.window.glfwWindow);
+	application.input.loop(application, application.window.glfwWindow);
 }
 
-void Window::cleanup() const {
+void Window::cleanup(Application& application) const {
 	log_info("Cleaning up window...");
 
 	glfwDestroyWindow(application.window.glfwWindow);
@@ -44,41 +41,41 @@ void Window::cleanup() const {
 	log_info("Window cleaned up!");
 }
 
-const char* Window::getWindowName() {
+const char* Window::getWindowName(Application& application) {
 	return application.window.windowName;
 }
 
-const uint32_t Window::getWindowWidth() {
+const uint32_t Window::getWindowWidth(Application& application) {
 	return application.window.windowWidth;
 }
 
-const uint32_t Window::getWindowHeight() {
+const uint32_t Window::getWindowHeight(Application& application) {
 	return application.window.windowHeight;
 }
 
-void Window::setWindowName(char* windowName) {
+void Window::setWindowName(Application& application, char* windowName) {
 	application.window.windowName = windowName;
 
 	glfwSetWindowTitle(application.window.glfwWindow, application.window.windowName);
 }
 
-void Window::setWindowWidth(uint32_t windowWidth) {
+void Window::setWindowWidth(Application& application, uint32_t windowWidth) {
 	application.window.windowWidth = windowWidth;
 
-	glfwSetWindowSize(application.window.glfwWindow, application.window.getWindowWidth(), application.window.getWindowHeight());
+	glfwSetWindowSize(application.window.glfwWindow, application.window.getWindowWidth(application), application.window.getWindowHeight(application));
 }
 
-void Window::setWindowHeight(uint32_t windowHeight) {
+void Window::setWindowHeight(Application& application, uint32_t windowHeight) {
 	application.window.windowHeight = windowHeight;
 
-	glfwSetWindowSize(application.window.glfwWindow, application.window.getWindowWidth(), application.window.getWindowHeight());
+	glfwSetWindowSize(application.window.glfwWindow, application.window.getWindowWidth(application), application.window.getWindowHeight(application));
 }
 
-void Window::setWindowSize(uint32_t windowWidth, uint32_t windowHeight) {
-	application.window.setWindowWidth(windowWidth);
-	application.window.setWindowHeight(windowHeight);
+void Window::setWindowSize(Application& application, uint32_t windowWidth, uint32_t windowHeight) {
+	application.window.setWindowWidth(application, windowWidth);
+	application.window.setWindowHeight(application, windowHeight);
 
-	glfwSetWindowSize(application.window.glfwWindow, application.window.getWindowWidth(), application.window.getWindowHeight());
+	glfwSetWindowSize(application.window.glfwWindow, application.window.getWindowWidth(application), application.window.getWindowHeight(application));
 
 	log_info("Window resized!");
 }

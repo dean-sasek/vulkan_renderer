@@ -3,8 +3,10 @@
 
 #include "GLFW/glfw3.h"
 
+class Application;
+
 class Input {
 	public:
-		void loop(GLFWwindow* window);
+		void loop(Application& application, GLFWwindow* window);
 	private:
 };

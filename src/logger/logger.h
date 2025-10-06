@@ -21,6 +21,8 @@ class Logger {
 		static std::string levelToString(Logger::level level);
 };
 
-#define log_info(message) application.logger.log(Logger::level::info, message)
-#define log_warning(message) application.logger.log(Logger::level::warning, message)
+extern Logger logger;
+
+#define log_info(message) logger.log(Logger::level::info, message)
+#define log_warning(message) logger.log(Logger::level::warning, message)
 #define log_error(message) throw std::runtime_error(message);

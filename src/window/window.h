@@ -7,25 +7,27 @@
 #include "GLFW/glfw3.h"
 #include "GLFW/glfw3native.h"
 
+class Application;
+
 class Window {
 	public:
-		void init();
-		void poll();
-		void cleanup() const;
-		bool shouldClose();
+		void init(Application& application);
+		void poll(Application& application);
+		void cleanup(Application& application) const;
+		bool shouldClose(Application& application);
 
-		const char* getWindowName();
-		const uint32_t getWindowWidth();
-		const uint32_t getWindowHeight();
+		const char* getWindowName(Application& application);
+		const uint32_t getWindowWidth(Application& application);
+		const uint32_t getWindowHeight(Application& application);
 
-		void setWindowName(char* windowName);
-		void setWindowWidth(uint32_t windowWidth);
-		void setWindowHeight(uint32_t windowHeight);
-		void setWindowSize(uint32_t windowWidth, uint32_t windowHeight);
+		void setWindowName(Application& application, char* windowName);
+		void setWindowWidth(Application& application, uint32_t windowWidth);
+		void setWindowHeight(Application& application, uint32_t windowHeight);
+		void setWindowSize(Application& application, uint32_t windowWidth, uint32_t windowHeight);
 
 		GLFWwindow* glfwWindow = nullptr;
 	private:
-		const char* windowName = "dean";
+		const char* windowName = "Vulkan 1.4";
 		uint32_t windowWidth = 800;
 		uint32_t windowHeight = 600;
 

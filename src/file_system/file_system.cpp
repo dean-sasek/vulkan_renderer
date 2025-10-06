@@ -1,6 +1,5 @@
 #include "file_system.h"
-#include "../logger/logger.h"
-#include "../../main.h"
+#include "../application/application.h"
 
 FileSystem fileSystem;
 
