@@ -1,4 +1,6 @@
 #include "file_system.h"
+#include "../logger/logger.h"
+#include "../../main.h"
 
 FileSystem fileSystem;
 
@@ -6,10 +8,10 @@ std::vector<char> FileSystem::readFile(const std::string& fileName) {
 	std::ifstream file(fileName, std::ios::ate | std::ios::binary);
 
 	if (!file.is_open()) {
-		throw std::runtime_error("Failed to open file: " + fileName);
+		log_error("Failed to open file: " + fileName);
 	}
 	else {
-		std::cout << "Successfully opened file!" << std::endl;
+		log_info("Successfully opened file: " + fileName);
 	}
 
 	size_t fileSize = (size_t) file.tellg();

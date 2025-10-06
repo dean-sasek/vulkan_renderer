@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "swapchain.h"
 #include "renderer.h"
 #include "../../main.h"
@@ -21,7 +19,7 @@ VkSwapchainKHR Swapchain::getSwapchain() {
 }
 
 void Swapchain::cleanup() {
-	std::cout << "Cleaning up swapchain..." << std::endl;
+	log_info("Cleaning up swapchain...");
 
 	for (auto framebuffer : application.swapchain.framebuffers) {
 		vkDestroyFramebuffer(application.renderer.getDevice(), framebuffer, nullptr);
@@ -33,7 +31,7 @@ void Swapchain::cleanup() {
 
 	vkDestroySwapchainKHR(application.renderer.getDevice(), application.swapchain.swapchain, nullptr);
 
-	std::cout << "Cleaned up swapchain!" << std::endl;
+	log_info("Cleaned up swapchain!");
 }
 
 void Swapchain::createSwapchain() {
@@ -84,10 +82,10 @@ void Swapchain::createSwapchain() {
 	VkResult result = vkCreateSwapchainKHR(application.renderer.getDevice(), &createInfo, nullptr, &swapchain.swapchain);
 
 	if (result != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create swapchain!");
+		log_error("Failed to create swapchain!");
 	}
 	else {
-		std::cout << "Successfully created swapchain!" << std::endl;
+		log_info("Successfully created swapchain!");
 	}
 
 	vkGetSwapchainImagesKHR(application.renderer.getDevice(), swapchain.swapchain, &imageCount, nullptr);
@@ -137,7 +135,7 @@ void Swapchain::createImageViews() {
 		createInfo.subresourceRange.layerCount = 1;
 
 		if (vkCreateImageView(application.renderer.getDevice(), &createInfo, nullptr, &application.swapchain.imageViews[i]) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create image views!");
+			log_error("failed to create image views!");
 		}
 	}
 }
@@ -184,7 +182,7 @@ void Swapchain::createFramebuffers() {
 		framebufferInfo.layers = 1;
 
 		if (vkCreateFramebuffer(application.renderer.getDevice(), &framebufferInfo, nullptr, &application.swapchain.framebuffers[i]) != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create framebuffer!");
+			log_error("Failed to create framebuffer!");
 		}
 	}
 }

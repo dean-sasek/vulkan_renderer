@@ -3,7 +3,6 @@
 
 #include <fstream>
 #include <vector>
-#include <iostream>
 
 class FileSystem {
 	public:

@@ -3,7 +3,6 @@
 
 #define NOMINMAX
 
-#include <iostream>
 #include <stdexcept>
 
 #include "src/window/window.h"

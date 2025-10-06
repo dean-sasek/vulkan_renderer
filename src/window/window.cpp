@@ -5,7 +5,7 @@
 #include "../../main.h"
 
 void Window::init() {
-	std::cout << "Initializing window..." << std::endl;
+	log_info("Initializing window...");
 
 	glfwInit();
 
@@ -15,11 +15,11 @@ void Window::init() {
 	glfwSetWindowUserPointer(application.window.glfwWindow, this);
 	glfwSetFramebufferSizeCallback(application.window.glfwWindow, application.window.framebufferResizeCallback);
 
-	std::cout << "Window initialized!" << std::endl;
+	log_info("Window initialized!");
 }
 
 void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-	std::cout << "Framebuffer resized!" << std::endl;
+	log_info("Framebuffer resized!");
 
 	auto renderer = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window));
 	renderer->framebufferResized = true;
@@ -36,12 +36,12 @@ void Window::poll() {
 }
 
 void Window::cleanup() const {
-	std::cout << "Cleaning up window..." << std::endl;
+	log_info("Cleaning up window...");
 
 	glfwDestroyWindow(application.window.glfwWindow);
 	glfwTerminate();
 
-	std::cout << "Window cleaned up!" << std::endl;
+	log_info("Window cleaned up!");
 }
 
 const char* Window::getWindowName() {
@@ -80,5 +80,5 @@ void Window::setWindowSize(uint32_t windowWidth, uint32_t windowHeight) {
 
 	glfwSetWindowSize(application.window.glfwWindow, application.window.getWindowWidth(), application.window.getWindowHeight());
 
-	std::cout << "Window resized!" << std::endl;
+	log_info("Window resized!");
 }

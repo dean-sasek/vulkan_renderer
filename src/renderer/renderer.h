@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <limits>
 #include <algorithm>
-#include <iostream>
 #include <cstring>
 
 #include "vulkan/vulkan.h"

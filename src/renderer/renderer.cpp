@@ -90,7 +90,7 @@ void Renderer::init() {
 	application.renderer.createCommandBuffers();
 	application.renderer.createSyncObjects();
 
-	std::cout << "Renderer initialized!" << std::endl;
+	log_info("Renderer initialized!");
 }
 
 void Renderer::createGraphicsPipeline() {
@@ -194,10 +194,10 @@ void Renderer::createGraphicsPipeline() {
 	VkResult pipelineLayoutResult = vkCreatePipelineLayout(application.renderer.device, &pipelineLayoutCreateInfo, nullptr, &application.renderer.pipelineLayout);
 
 	if (pipelineLayoutResult != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create pipeline layout!");
+		log_error("Failed to create pipeline layout!");
 	}
 	else {
-		std::cout << "Successfully created pipeline layout!" << std::endl;
+		log_info("Successfully created pipeline layout!");
 	}
 
 	VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo{};
@@ -222,10 +222,10 @@ void Renderer::createGraphicsPipeline() {
 	VkResult graphicsPipelineResult = vkCreateGraphicsPipelines(application.renderer.device, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo, nullptr, &application.renderer.graphicsPipeline);
 
 	if (graphicsPipelineResult != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create graphics pipeline!");
+		log_error("Failed to create graphics pipeline!");
 	}
 	else {
-		std::cout << "Successfully created graphics pipeline!" << std::endl;
+		log_info("Successfully created graphics pipeline!");
 	}
 
 	vkDestroyShaderModule(application.renderer.device, vertexShaderModule, nullptr);
@@ -243,10 +243,10 @@ VkShaderModule Renderer::createShaderModule(const std::vector<char>& shaderCode)
 	VkResult result = vkCreateShaderModule(application.renderer.device, &createInfo, nullptr, &shaderModule);
 
 	if (result != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create shader module!");
+		log_error("Failed to create shader module!");
 	}
 	else {
-		std::cout << "Successfully created shader module!" << std::endl;
+		log_info("Successfully created shader module!");
 
 		return shaderModule;
 	}
@@ -290,10 +290,10 @@ void Renderer::createRenderPass() {
 	VkResult result = vkCreateRenderPass(application.renderer.device, &renderPassCreateInfo, nullptr, &application.renderer.renderPass);
 
 	if (result != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create render pass!");
+		log_error("Failed to create render pass!");
 	}
 	else {
-		std::cout << "Successfully created render pass!" << std::endl;
+		log_info("Successfully created render pass!");
 	}
 }
 
@@ -308,10 +308,10 @@ void Renderer::createCommandPool() {
 	VkResult commandPoolResult = vkCreateCommandPool(application.renderer.device, &commandPoolCreateInfo, nullptr, &application.renderer.commandPool);
 
 	if (commandPoolResult != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create command pool!");
+		log_error("Failed to create command pool!");
 	}
 	else {
-		std::cout << "Successfully created command pool!" << std::endl;
+		log_info("Successfully created command pool!");
 	}
 }
 
@@ -327,10 +327,10 @@ void Renderer::createCommandBuffers() {
 	VkResult commandBufferResult = vkAllocateCommandBuffers(application.renderer.device, &commandBufferAllocateInfo, application.renderer.commandBuffers.data());
 
 	if (commandBufferResult != VK_SUCCESS) {
-		throw std::runtime_error("Failed to allocate command buffers!");
+		log_error("Failed to allocate command buffers!");
 	}
 	else {
-		std::cout << "Successfully allocated command buffers!" << std::endl;
+		log_info("Successfully allocated command buffers!");
 	}
 }
 
@@ -343,7 +343,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	VkResult commandBufferBeginInfoResult = vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo);
 
 	if (commandBufferBeginInfoResult != VK_SUCCESS) {
-		throw std::runtime_error("Failed to begin recording command buffer!");
+		log_error("Failed to begin recording command buffer!");
 	}
 
 	VkRenderPassBeginInfo renderPassBeginInfo{};
@@ -382,7 +382,7 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	VkResult commandBufferResult = vkEndCommandBuffer(commandBuffer);
 
 	if (commandBufferResult != VK_SUCCESS) {
-		throw std::runtime_error("Failed to record command buffer!");
+		log_error("Failed to record command buffer!");
 	};
 }
 
@@ -404,16 +404,16 @@ void Renderer::createSyncObjects() {
 		VkResult inFlightFenceResult = vkCreateFence(application.renderer.device, &fenceCreateInfo, nullptr, &inFlightFences[i]);
 
 		if (imageAvailableSemaphoreResult != VK_SUCCESS || renderFinishedSemaphoreResult != VK_SUCCESS || inFlightFenceResult != VK_SUCCESS) {
-			throw std::runtime_error("Failed to create semaphores and fences!");
+			log_error("Failed to create semaphores and fences!");
 		}
 		else {
-			std::cout << "Successfully created semaphores & fences!" << std::endl;
+			log_info("Successfully created semaphores & fences!");
 		}
 	}
 }
 
 void Renderer::cleanup() {
-	std::cout << "Cleaning up renderer..." << std::endl;
+	log_info("Cleaning up renderer...");
 
 	vkDeviceWaitIdle(application.renderer.device);
 
@@ -441,7 +441,7 @@ void Renderer::cleanup() {
 	vkDestroySurfaceKHR(application.renderer.instance, application.renderer.surface, nullptr);
 	vkDestroyInstance(application.renderer.instance, nullptr);
 
-	std::cout << "Renderer cleaned up!" << std::endl;
+	log_info("Renderer cleaned up!");
 }
 
 void Renderer::drawFrame() {
@@ -454,12 +454,12 @@ void Renderer::drawFrame() {
 		application.renderer.framebufferResized = false;
 		application.swapchain.recreateSwapchain();
 
-		std::cout << "Swap chain out of date, recreating..." << std::endl;
+		log_info("Swap chain out of date, recreating...");
 
 		return;
 	}
 	else if (acquireNextImageResult != VK_SUCCESS) {
-		throw std::runtime_error("Failed to acquire swap chain image!");
+		log_error("Failed to acquire swap chain image!");
 	}
 
 	vkResetFences(application.renderer.device, 1, &application.renderer.inFlightFences[application.renderer.currentFrame]);
@@ -487,7 +487,7 @@ void Renderer::drawFrame() {
 	VkResult queueSubmitResult = vkQueueSubmit(application.renderer.graphicsQueue, 1, &submitInfo, application.renderer.inFlightFences[currentFrame]);
 
 	if (queueSubmitResult != VK_SUCCESS) {
-		throw std::runtime_error("Failed to submit draw!");
+		log_error("Failed to submit draw!");
 	}
 
 	VkPresentInfoKHR presentInfo{};
@@ -509,10 +509,10 @@ void Renderer::drawFrame() {
 
 void Renderer::createInstance() {
 	if (application.renderer.enableValidationLayers && !application.renderer.checkValidationLayerSupport()) {
-		throw std::runtime_error("Validation layers requested, but not supported!");
+		log_error("Validation layers requested, but not supported!");
 	}
 	else {
-		std::cout << "Validation layers enabled!" << std::endl;
+		log_info("Validation layers enabled!");
 	}
 
 	VkApplicationInfo applicationInfo{};
@@ -548,10 +548,10 @@ void Renderer::createInstance() {
 	}
 
 	if (vkCreateInstance(&createInfo, nullptr, &application.renderer.instance) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create Vulkan instance!");
+		log_error("Failed to create Vulkan instance!");
 	}
 	else {
-		std::cout << "Successfully created Vulkan instance!" << std::endl;
+		log_info("Successfully created Vulkan instance!");
 	}
 }
 
@@ -595,7 +595,7 @@ std::vector<const char*> Renderer::getRequiredExtensions() {
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-	std::cerr << "Validation layer: " << pCallbackData->pMessage << std::endl;
+	log_info(std::string("Validation layer: ") + pCallbackData->pMessage);
 
 	return VK_FALSE;
 }
@@ -608,10 +608,10 @@ void Renderer::setupDebugMessenger() {
 	application.renderer.populateDebugMessengerCreateInfo(createInfo);
 
 	if (application.renderer.createDebugUtilsMessengerExt(application.renderer.instance, &createInfo, nullptr, &application.renderer.debugMessenger) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create debug messenger!");
+		log_error("Failed to create debug messenger!");
 	}
 	else {
-		std::cout << "Successfully created debug messenger!" << std::endl;
+		log_info("Successfully created debug messenger!");
 	}
 }
 
@@ -652,7 +652,7 @@ void Renderer::pickPhysicalDevice() {
 	vkEnumeratePhysicalDevices(application.renderer.instance, &deviceCount, nullptr);
 
 	if (deviceCount == 0) {
-		throw std::runtime_error("Failed to find GPU with Vulkan support!");
+		log_error("Failed to find GPU with Vulkan support!");
 	}
 
 	std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -662,14 +662,14 @@ void Renderer::pickPhysicalDevice() {
 		if (application.renderer.isPhysicalDeviceSuitable(device)) {
 			application.renderer.setPhysicalDevice(device);
 
-			std::cout << "Successfully picked physical device!" << std::endl;
+			log_info("Successfully picked physical device!");
 
 			break;
 		}
 	}
 
 	if (application.renderer.getPhysicalDevice() == VK_NULL_HANDLE) {
-		throw std::runtime_error("Failed to find a suitable physical device!");
+		log_error("Failed to find a suitable physical device!");
 	}
 }
 
@@ -719,7 +719,7 @@ Renderer::queueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice physic
 		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 			indices.graphicsFamily = i;
 
-			std::cout << "Graphics support found!" << std::endl;
+			log_info("Graphics support found!");
 
 			VkBool32 presentSupport = false;
 			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, application.renderer.surface, &presentSupport);
@@ -727,7 +727,7 @@ Renderer::queueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice physic
 			if (presentSupport) {
 				indices.presentFamily = i;
 
-				std::cout << "Present support found!" << std::endl;
+				log_info("Present support found!");
 			}
 		}
 

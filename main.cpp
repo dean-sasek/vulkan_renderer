@@ -8,7 +8,7 @@
 Application application;
 
 void Application::init() {
-	std::cout << "Initializing application..." << std::endl;
+	log_info("Initializing application...");
 
 	application.window.init();
 	application.renderer.init();
@@ -46,13 +46,13 @@ int main() {
 		application.init();
 	}
 	catch (const std::runtime_error& e) {
-		std::cerr << "Error: " << e.what() << std::endl;
+		log_error(e.what());
 	}
 	catch (...) {
-		std::cerr << "Unknown error!" << std::endl;
+		log_error("Unknown error!");
 	}
 
-	std::cout << "Application ended successfully!" << std::endl;
+	log_info("Application ended successfully!");
 
 	return 0;
 }
