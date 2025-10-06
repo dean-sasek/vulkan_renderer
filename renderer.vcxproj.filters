@@ -27,7 +27,7 @@
     <ClCompile Include="src\input\input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\fileSystem\fileSystem.cpp">
+    <ClCompile Include="src\file_system\file_system.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\renderer\swapchain.cpp">
@@ -50,7 +50,7 @@
     <ClInclude Include="src\input\input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\fileSystem\fileSystem.h">
+    <ClInclude Include="src\file_system\file_system.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\renderer\swapchain.h">

@@ -11,12 +11,12 @@ VkDevice Renderer::getDevice() {
 }
 
 void Renderer::createSurface() {
-	std::cout << "Creating window surface..." << std::endl;
+	log_info("Creating window surface...");
 
 	VkResult result = glfwCreateWindowSurface(application.renderer.instance, application.window.glfwWindow, nullptr, &application.renderer.surface);
 
 	if (result != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create window surface!");
+		log_error("Failed to create window surface!");
 	}
 	else if (result == VK_SUCCESS) {
 		log_info("Successfully created window surface!");
@@ -62,10 +62,10 @@ void Renderer::createLogicalDevice() {
 	vkGetDeviceQueue(application.renderer.device, application.renderer.indices.presentFamily.value(), 0, &application.renderer.presentQueue);
 
 	if (result != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create logical device!");
+		log_error("Failed to create logical device!");
 	}
 	else if (result == VK_SUCCESS) {
-		std::cout << "Successfully created logical device!" << std::endl;
+		log_info("Successfully created logical device!");
 	}
 }
 
@@ -74,7 +74,7 @@ VkRenderPass Renderer::getRenderPass() {
 }
 
 void Renderer::init() {
-	std::cout << "Initializing renderer..." << std::endl;
+	log_info("Initializing renderer...");
 
 	application.renderer.createInstance();
 	application.renderer.setupDebugMessenger();

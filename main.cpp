@@ -3,7 +3,7 @@
 #include "src/window/window.h"
 #include "src/renderer/renderer.h"
 #include "src/input/input.h"
-#include "src/fileSystem/fileSystem.h"
+#include "src/file_system/file_system.h"
 
 Application application;
 
