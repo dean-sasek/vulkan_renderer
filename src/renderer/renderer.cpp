@@ -1,19 +1,19 @@
 #include "renderer.h"
 #include "../application/application.h"
 
-VkPhysicalDevice Renderer::getPhysicalDevice(Application& application) {
-	return application.renderer.physicalDevice;
+VkPhysicalDevice Renderer::getPhysicalDevice() {
+	return physicalDevice;
 }
 
 
-VkDevice Renderer::getDevice(Application& application) {
-	return application.renderer.device;
+VkDevice Renderer::getDevice() {
+	return device;
 }
 
-void Renderer::createSurface(Application& application) {
+void Renderer::createSurface() {
 	log_info("Creating window surface...");
 
-	VkResult result = glfwCreateWindowSurface(application.renderer.instance, application.window.glfwWindow, nullptr, &application.renderer.surface);
+	VkResult result = glfwCreateWindowSurface(instance, application->window.glfwWindow, nullptr, &surface);
 
 	if (result != VK_SUCCESS) {
 		log_error("Failed to create window surface!");
@@ -23,12 +23,12 @@ void Renderer::createSurface(Application& application) {
 	}
 }
 
-void Renderer::setPhysicalDevice(Application& application, VkPhysicalDevice physicalDevice) {
-	application.renderer.physicalDevice = physicalDevice;
+void Renderer::setPhysicalDevice(VkPhysicalDevice physicalDevice) {
+	this->physicalDevice = physicalDevice;
 }
 
-void Renderer::createLogicalDevice(Application& application) {
-	Renderer::queueFamilyIndices indices = application.renderer.findQueueFamilies(application, application.renderer.getPhysicalDevice(application));
+void Renderer::createLogicalDevice() {
+	Renderer::queueFamilyIndices indices = findQueueFamilies(getPhysicalDevice());
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 
@@ -53,13 +53,13 @@ void Renderer::createLogicalDevice(Application& application) {
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfos.data();
 	deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
-	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(application.renderer.deviceExtensions.size());
-	deviceCreateInfo.ppEnabledExtensionNames = application.renderer.deviceExtensions.data();
+	deviceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+	deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-	VkResult result = vkCreateDevice(application.renderer.physicalDevice, &deviceCreateInfo, nullptr, &application.renderer.device);
+	VkResult result = vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device);
 
-	vkGetDeviceQueue(application.renderer.device, application.renderer.indices.graphicsFamily.value(), 0, &application.renderer.graphicsQueue);
-	vkGetDeviceQueue(application.renderer.device, application.renderer.indices.presentFamily.value(), 0, &application.renderer.presentQueue);
+	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
 
 	if (result != VK_SUCCESS) {
 		log_error("Failed to create logical device!");
@@ -69,36 +69,38 @@ void Renderer::createLogicalDevice(Application& application) {
 	}
 }
 
-VkRenderPass Renderer::getRenderPass(Application& application) {
-	return application.renderer.renderPass;
+VkRenderPass Renderer::getRenderPass() {
+	return renderPass;
 }
 
 void Renderer::init(Application& application) {
 	log_info("Initializing renderer...");
 
-	application.renderer.createInstance(application);
-	application.renderer.setupDebugMessenger(application);
-	application.renderer.createSurface(application);
-	application.renderer.pickPhysicalDevice(application);
-	application.renderer.createLogicalDevice(application);
-	application.swapchain.createSwapchain(application);
-	application.swapchain.createImageViews(application);
-	application.renderer.createRenderPass(application);
-	application.renderer.createGraphicsPipeline(application);
-	application.swapchain.createFramebuffers(application);
-	application.renderer.createCommandPool(application);
-	application.renderer.createCommandBuffers(application);
-	application.renderer.createSyncObjects(application);
+	this->application = &application;
+
+	createInstance();
+	setupDebugMessenger();
+	createSurface();
+	pickPhysicalDevice();
+	createLogicalDevice();
+	swapchain.createSwapchain(application);
+	swapchain.createImageViews(application);
+	createRenderPass();
+	createGraphicsPipeline();
+	swapchain.createFramebuffers(application);
+	createCommandPool();
+	createCommandBuffers();
+	createSyncObjects();
 
 	log_info("Renderer initialized!");
 }
 
-void Renderer::createGraphicsPipeline(Application& application) {
+void Renderer::createGraphicsPipeline() {
 	auto vertexShaderCode = fileSystem.readFile("src/renderer/shaders/vert.spv");
 	auto fragmentShaderCode = fileSystem.readFile("src/renderer/shaders/frag.spv");
 
-	VkShaderModule vertexShaderModule = application.renderer.createShaderModule(application, vertexShaderCode);
-	VkShaderModule fragmentShaderModule = application.renderer.createShaderModule(application, fragmentShaderCode);
+	VkShaderModule vertexShaderModule = createShaderModule(vertexShaderCode);
+	VkShaderModule fragmentShaderModule = createShaderModule(fragmentShaderCode);
 
 	VkPipelineShaderStageCreateInfo vertexShaderStageCreateInfo{};
 	vertexShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -191,7 +193,7 @@ void Renderer::createGraphicsPipeline(Application& application) {
 	pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
 	pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
 
-	VkResult pipelineLayoutResult = vkCreatePipelineLayout(application.renderer.device, &pipelineLayoutCreateInfo, nullptr, &application.renderer.pipelineLayout);
+	VkResult pipelineLayoutResult = vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout);
 
 	if (pipelineLayoutResult != VK_SUCCESS) {
 		log_error("Failed to create pipeline layout!");
@@ -212,14 +214,14 @@ void Renderer::createGraphicsPipeline(Application& application) {
 	graphicsPipelineCreateInfo.pDepthStencilState = nullptr;
 	graphicsPipelineCreateInfo.pColorBlendState = &colorBlendStateCreateInfo;
 	graphicsPipelineCreateInfo.pDynamicState = &dynamicStateCreateInfo;
-	graphicsPipelineCreateInfo.layout = application.renderer.pipelineLayout;
-	graphicsPipelineCreateInfo.renderPass = application.renderer.renderPass;
+	graphicsPipelineCreateInfo.layout = pipelineLayout;
+	graphicsPipelineCreateInfo.renderPass = renderPass;
 	graphicsPipelineCreateInfo.subpass = 0;
 
 	graphicsPipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 	graphicsPipelineCreateInfo.basePipelineIndex = -1;
 
-	VkResult graphicsPipelineResult = vkCreateGraphicsPipelines(application.renderer.device, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo, nullptr, &application.renderer.graphicsPipeline);
+	VkResult graphicsPipelineResult = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphicsPipelineCreateInfo, nullptr, &graphicsPipeline);
 
 	if (graphicsPipelineResult != VK_SUCCESS) {
 		log_error("Failed to create graphics pipeline!");
@@ -228,11 +230,11 @@ void Renderer::createGraphicsPipeline(Application& application) {
 		log_info("Successfully created graphics pipeline!");
 	}
 
-	vkDestroyShaderModule(application.renderer.device, vertexShaderModule, nullptr);
-	vkDestroyShaderModule(application.renderer.device, fragmentShaderModule, nullptr);
+	vkDestroyShaderModule(device, vertexShaderModule, nullptr);
+	vkDestroyShaderModule(device, fragmentShaderModule, nullptr);
 }
 
-VkShaderModule Renderer::createShaderModule(Application& application, const std::vector<char>& shaderCode) {
+VkShaderModule Renderer::createShaderModule(const std::vector<char>& shaderCode) {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	createInfo.codeSize = shaderCode.size();
@@ -240,7 +242,7 @@ VkShaderModule Renderer::createShaderModule(Application& application, const std:
 
 	VkShaderModule shaderModule;
 
-	VkResult result = vkCreateShaderModule(application.renderer.device, &createInfo, nullptr, &shaderModule);
+	VkResult result = vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
 
 	if (result != VK_SUCCESS) {
 		log_error("Failed to create shader module!");
@@ -252,9 +254,9 @@ VkShaderModule Renderer::createShaderModule(Application& application, const std:
 	}
 };
 
-void Renderer::createRenderPass(Application& application) {
+void Renderer::createRenderPass() {
 	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = application.swapchain.getImageFormat(application);
+	colorAttachment.format = application->swapchain.getImageFormat(*application);
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -287,7 +289,7 @@ void Renderer::createRenderPass(Application& application) {
 	renderPassCreateInfo.dependencyCount = 1;
 	renderPassCreateInfo.pDependencies = &subpassDependency;
 
-	VkResult result = vkCreateRenderPass(application.renderer.device, &renderPassCreateInfo, nullptr, &application.renderer.renderPass);
+	VkResult result = vkCreateRenderPass(device, &renderPassCreateInfo, nullptr, &renderPass);
 
 	if (result != VK_SUCCESS) {
 		log_error("Failed to create render pass!");
@@ -297,15 +299,15 @@ void Renderer::createRenderPass(Application& application) {
 	}
 }
 
-void Renderer::createCommandPool(Application& application) {
-	Renderer::queueFamilyIndices queueFamilyIndices = application.renderer.findQueueFamilies(application, application.renderer.physicalDevice);
+void Renderer::createCommandPool() {
+	Renderer::queueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
 
 	VkCommandPoolCreateInfo commandPoolCreateInfo{};
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 
-	VkResult commandPoolResult = vkCreateCommandPool(application.renderer.device, &commandPoolCreateInfo, nullptr, &application.renderer.commandPool);
+	VkResult commandPoolResult = vkCreateCommandPool(device, &commandPoolCreateInfo, nullptr, &commandPool);
 
 	if (commandPoolResult != VK_SUCCESS) {
 		log_error("Failed to create command pool!");
@@ -315,16 +317,16 @@ void Renderer::createCommandPool(Application& application) {
 	}
 }
 
-void Renderer::createCommandBuffers(Application& application) {
-	application.renderer.commandBuffers.resize(application.renderer.MAX_FRAMES_IN_FLIGHT);
+void Renderer::createCommandBuffers() {
+	commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
 	VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
 	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	commandBufferAllocateInfo.commandPool = application.renderer.commandPool;
+	commandBufferAllocateInfo.commandPool = commandPool;
 	commandBufferAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-	commandBufferAllocateInfo.commandBufferCount = (uint32_t)application.renderer.commandBuffers.size();
+	commandBufferAllocateInfo.commandBufferCount = (uint32_t)commandBuffers.size();
 
-	VkResult commandBufferResult = vkAllocateCommandBuffers(application.renderer.device, &commandBufferAllocateInfo, application.renderer.commandBuffers.data());
+	VkResult commandBufferResult = vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, commandBuffers.data());
 
 	if (commandBufferResult != VK_SUCCESS) {
 		log_error("Failed to allocate command buffers!");
@@ -334,7 +336,7 @@ void Renderer::createCommandBuffers(Application& application) {
 	}
 }
 
-void Renderer::recordCommandBuffer(Application& application, VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
 	VkCommandBufferBeginInfo commandBufferBeginInfo{};
 	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	commandBufferBeginInfo.flags = 0;
@@ -348,10 +350,10 @@ void Renderer::recordCommandBuffer(Application& application, VkCommandBuffer com
 
 	VkRenderPassBeginInfo renderPassBeginInfo{};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassBeginInfo.renderPass = application.renderer.renderPass;
-	renderPassBeginInfo.framebuffer = application.swapchain.getFramebuffers(application)[imageIndex];
+	renderPassBeginInfo.renderPass = renderPass;
+	renderPassBeginInfo.framebuffer = swapchain.getFramebuffers(*application)[imageIndex];
 	renderPassBeginInfo.renderArea.offset = { 0, 0 };
-	renderPassBeginInfo.renderArea.extent = application.swapchain.getExtent(application);
+	renderPassBeginInfo.renderArea.extent = swapchain.getExtent(*application);
 
 	VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 	renderPassBeginInfo.clearValueCount = 1;
@@ -359,20 +361,20 @@ void Renderer::recordCommandBuffer(Application& application, VkCommandBuffer com
 
 	vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, application.renderer.graphicsPipeline);
+	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(application.swapchain.getExtent(application).width);
-	viewport.height = static_cast<float>(application.swapchain.getExtent(application).height);
+	viewport.width = static_cast<float>(swapchain.getExtent(*application).width);
+	viewport.height = static_cast<float>(swapchain.getExtent(*application).height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 	VkRect2D scissor{};
 	scissor.offset = { 0, 0 };
-	scissor.extent = application.swapchain.getExtent(application);
+	scissor.extent = swapchain.getExtent(*application);
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
@@ -386,10 +388,10 @@ void Renderer::recordCommandBuffer(Application& application, VkCommandBuffer com
 	};
 }
 
-void Renderer::createSyncObjects(Application& application) {
-	application.renderer.imageAvailableSemaphores.resize(application.renderer.MAX_FRAMES_IN_FLIGHT);
-	application.renderer.renderFinishedSemaphores.resize(application.renderer.MAX_FRAMES_IN_FLIGHT);
-	application.renderer.inFlightFences.resize(application.renderer.MAX_FRAMES_IN_FLIGHT);
+void Renderer::createSyncObjects() {
+	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 
 	VkSemaphoreCreateInfo semaphoreCreateInfo{};
 	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -398,10 +400,10 @@ void Renderer::createSyncObjects(Application& application) {
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 	
-	for (size_t i = 0; i < application.renderer.MAX_FRAMES_IN_FLIGHT; i++) {
-		VkResult imageAvailableSemaphoreResult = vkCreateSemaphore(application.renderer.device, &semaphoreCreateInfo, nullptr, &application.renderer.imageAvailableSemaphores[i]);
-		VkResult renderFinishedSemaphoreResult = vkCreateSemaphore(application.renderer.device, &semaphoreCreateInfo, nullptr, &application.renderer.renderFinishedSemaphores[i]);
-		VkResult inFlightFenceResult = vkCreateFence(application.renderer.device, &fenceCreateInfo, nullptr, &inFlightFences[i]);
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		VkResult imageAvailableSemaphoreResult = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]);
+		VkResult renderFinishedSemaphoreResult = vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]);
+		VkResult inFlightFenceResult = vkCreateFence(device, &fenceCreateInfo, nullptr, &inFlightFences[i]);
 
 		if (imageAvailableSemaphoreResult != VK_SUCCESS || renderFinishedSemaphoreResult != VK_SUCCESS || inFlightFenceResult != VK_SUCCESS) {
 			log_error("Failed to create semaphores and fences!");
@@ -412,47 +414,47 @@ void Renderer::createSyncObjects(Application& application) {
 	}
 }
 
-void Renderer::cleanup(Application& application) {
+void Renderer::cleanup() {
 	log_info("Cleaning up renderer...");
 
-	vkDeviceWaitIdle(application.renderer.device);
+	vkDeviceWaitIdle(device);
 
-	application.swapchain.cleanup(application);
+	swapchain.cleanup(*application);
 
-	vkDestroyPipeline(application.renderer.device, application.renderer.graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(application.renderer.device, application.renderer.pipelineLayout, nullptr);
+	vkDestroyPipeline(device, graphicsPipeline, nullptr);
+	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 
-	vkDestroyRenderPass(application.renderer.device, application.renderer.renderPass, nullptr);
+	vkDestroyRenderPass(device, renderPass, nullptr);
 
-	for (size_t i = 0; i < application.renderer.MAX_FRAMES_IN_FLIGHT; i++) {
-		vkDestroySemaphore(application.renderer.device, application.renderer.renderFinishedSemaphores[i], nullptr);
-		vkDestroySemaphore(application.renderer.device, application.renderer.imageAvailableSemaphores[i], nullptr);
-		vkDestroyFence(application.renderer.device, application.renderer.inFlightFences[i], nullptr);
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(device, inFlightFences[i], nullptr);
 	}
 
-	vkDestroyCommandPool(application.renderer.device, application.renderer.commandPool, nullptr);
+	vkDestroyCommandPool(device, commandPool, nullptr);
 
-	vkDestroyDevice(application.renderer.device, nullptr);
+	vkDestroyDevice(device, nullptr);
 
-	if (application.renderer.enableValidationLayers) {
-		application.renderer.destroyDebugUtilsMessengerExt(application.renderer.instance, application.renderer.debugMessenger, nullptr);
+	if (enableValidationLayers) {
+		destroyDebugUtilsMessengerExt(instance, debugMessenger, nullptr);
 	}
 
-	vkDestroySurfaceKHR(application.renderer.instance, application.renderer.surface, nullptr);
-	vkDestroyInstance(application.renderer.instance, nullptr);
+	vkDestroySurfaceKHR(instance, surface, nullptr);
+	vkDestroyInstance(instance, nullptr);
 
 	log_info("Renderer cleaned up!");
 }
 
-void Renderer::drawFrame(Application& application) {
-	vkWaitForFences(application.renderer.device, 1, &application.renderer.inFlightFences[application.renderer.currentFrame], VK_TRUE, UINT64_MAX);
+void Renderer::drawFrame() {
+	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
 	uint32_t imageIndex;
-	VkResult acquireNextImageResult = vkAcquireNextImageKHR(application.renderer.device, application.swapchain.getSwapchain(application), UINT64_MAX, application.renderer.imageAvailableSemaphores[application.renderer.currentFrame], VK_NULL_HANDLE, &imageIndex);
+	VkResult acquireNextImageResult = vkAcquireNextImageKHR(device, swapchain.getSwapchain(*application), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-	if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR || application.renderer.framebufferResized) {
-		application.renderer.framebufferResized = false;
-		application.swapchain.recreateSwapchain(application);
+	if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR || framebufferResized) {
+		framebufferResized = false;
+		swapchain.recreateSwapchain(*application);
 
 		log_info("Swap chain out of date, recreating...");
 
@@ -462,29 +464,29 @@ void Renderer::drawFrame(Application& application) {
 		log_error("Failed to acquire swap chain image!");
 	}
 
-	vkResetFences(application.renderer.device, 1, &application.renderer.inFlightFences[application.renderer.currentFrame]);
+	vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
-	vkResetCommandBuffer(application.renderer.commandBuffers[currentFrame], 0);
-	application.renderer.recordCommandBuffer(application, application.renderer.commandBuffers[currentFrame], imageIndex);
+	vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+	recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-	VkSemaphore waitSemaphores[] = { application.renderer.imageAvailableSemaphores[currentFrame]};
+	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame]};
 	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
 	submitInfo.pWaitDstStageMask = waitStages;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &application.renderer.commandBuffers[currentFrame];
+	submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
 
-	VkSemaphore signalSemaphores[] = { application.renderer.renderFinishedSemaphores[currentFrame]};
+	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores[currentFrame]};
 	
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	VkResult queueSubmitResult = vkQueueSubmit(application.renderer.graphicsQueue, 1, &submitInfo, application.renderer.inFlightFences[currentFrame]);
+	VkResult queueSubmitResult = vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]);
 
 	if (queueSubmitResult != VK_SUCCESS) {
 		log_error("Failed to submit draw!");
@@ -495,20 +497,20 @@ void Renderer::drawFrame(Application& application) {
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
 
-	VkSwapchainKHR swapChains[] = { application.swapchain.getSwapchain(application)};
+	VkSwapchainKHR swapChains[] = { swapchain.getSwapchain(*application)};
 	
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
 	presentInfo.pImageIndices = &imageIndex;
 	presentInfo.pResults = nullptr;
 
-	vkQueuePresentKHR(application.renderer.graphicsQueue, &presentInfo);
+	vkQueuePresentKHR(graphicsQueue, &presentInfo);
 
-	application.renderer.currentFrame = (application.renderer.currentFrame + 1) % application.renderer.MAX_FRAMES_IN_FLIGHT;
+	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void Renderer::createInstance(Application& application) {
-	if (application.renderer.enableValidationLayers && !application.renderer.checkValidationLayerSupport(application)) {
+void Renderer::createInstance() {
+	if (enableValidationLayers && !checkValidationLayerSupport()) {
 		log_error("Validation layers requested, but not supported!");
 	}
 	else {
@@ -518,7 +520,7 @@ void Renderer::createInstance(Application& application) {
 	VkApplicationInfo applicationInfo{};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 
-	applicationInfo.pApplicationName = application.window.getWindowName(application);
+	applicationInfo.pApplicationName = application->window.getWindowName(*application);
 	applicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
 
 	applicationInfo.pEngineName = "None";
@@ -530,16 +532,16 @@ void Renderer::createInstance(Application& application) {
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &applicationInfo;
 
-	auto extensions = application.renderer.getRequiredExtensions(application);
+	auto extensions = getRequiredExtensions();
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
-	if (application.renderer.enableValidationLayers) {
+	if (enableValidationLayers) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-		createInfo.ppEnabledLayerNames = application.renderer.validationLayers.data();
+		createInfo.ppEnabledLayerNames = validationLayers.data();
 
-		application.renderer.populateDebugMessengerCreateInfo(application, debugCreateInfo);
+		populateDebugMessengerCreateInfo(debugCreateInfo);
 		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
 	}
 	else {
@@ -547,7 +549,7 @@ void Renderer::createInstance(Application& application) {
 		createInfo.pNext = nullptr;
 	}
 
-	if (vkCreateInstance(&createInfo, nullptr, &application.renderer.instance) != VK_SUCCESS) {
+	if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
 		log_error("Failed to create Vulkan instance!");
 	}
 	else {
@@ -555,7 +557,7 @@ void Renderer::createInstance(Application& application) {
 	}
 }
 
-bool Renderer::checkValidationLayerSupport(Application& application) {
+bool Renderer::checkValidationLayerSupport() {
 	uint32_t layerCount;
 	
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -563,7 +565,7 @@ bool Renderer::checkValidationLayerSupport(Application& application) {
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-	for (const char* layerName : application.renderer.validationLayers) {
+	for (const char* layerName : validationLayers) {
 		bool layerFound = false;
 
 		for (const auto& layerProperties : availableLayers) {
@@ -582,12 +584,12 @@ bool Renderer::checkValidationLayerSupport(Application& application) {
 	return true;
 }
 
-std::vector<const char*> Renderer::getRequiredExtensions(Application& application) {
-	application.renderer.glfwExtensions = glfwGetRequiredInstanceExtensions(&application.renderer.glfwExtensionCount);
+std::vector<const char*> Renderer::getRequiredExtensions() {
+	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-	std::vector<const char*> extensions(application.renderer.glfwExtensions, application.renderer.glfwExtensions + application.renderer.glfwExtensionCount);
+	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-	if (application.renderer.enableValidationLayers) {
+	if (enableValidationLayers) {
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 	}
 
@@ -600,14 +602,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Renderer::debugCallback(VkDebugUtilsMessageSeveri
 	return VK_FALSE;
 }
 
-void Renderer::setupDebugMessenger(Application& application) {
-	if (!application.renderer.enableValidationLayers) return;
+void Renderer::setupDebugMessenger() {
+	if (!enableValidationLayers) return;
 
 	VkDebugUtilsMessengerCreateInfoEXT createInfo{};
 
-	application.renderer.populateDebugMessengerCreateInfo(application, createInfo);
+	populateDebugMessengerCreateInfo(createInfo);
 
-	if (application.renderer.createDebugUtilsMessengerExt(application.renderer.instance, &createInfo, nullptr, &application.renderer.debugMessenger) != VK_SUCCESS) {
+	if (createDebugUtilsMessengerExt(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
 		log_error("Failed to create debug messenger!");
 	}
 	else {
@@ -638,29 +640,29 @@ void Renderer::destroyDebugUtilsMessengerExt(VkInstance instance, VkDebugUtilsMe
 	}
 }
 
-void Renderer::populateDebugMessengerCreateInfo(Application& application, VkDebugUtilsMessengerCreateInfoEXT createInfo) {
+void Renderer::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT createInfo) {
 	createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-	createInfo.pfnUserCallback = application.renderer.debugCallback;
+	createInfo.pfnUserCallback = debugCallback;
 }
 
-void Renderer::pickPhysicalDevice(Application& application) {
+void Renderer::pickPhysicalDevice() {
 	uint32_t deviceCount = 0;
 
-	vkEnumeratePhysicalDevices(application.renderer.instance, &deviceCount, nullptr);
+	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
 	if (deviceCount == 0) {
 		log_error("Failed to find GPU with Vulkan support!");
 	}
 
 	std::vector<VkPhysicalDevice> devices(deviceCount);
-	vkEnumeratePhysicalDevices(application.renderer.instance, &deviceCount, devices.data());
+	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
 	for (const auto& device : devices) {
-		if (application.renderer.isPhysicalDeviceSuitable(application, device)) {
-			application.renderer.setPhysicalDevice(application, device);
+		if (isPhysicalDeviceSuitable(device)) {
+			setPhysicalDevice(device);
 
 			log_info("Successfully picked physical device!");
 
@@ -668,27 +670,27 @@ void Renderer::pickPhysicalDevice(Application& application) {
 		}
 	}
 
-	if (application.renderer.getPhysicalDevice(application) == VK_NULL_HANDLE) {
+	if (getPhysicalDevice() == VK_NULL_HANDLE) {
 		log_error("Failed to find a suitable physical device!");
 	}
 }
 
-bool Renderer::isPhysicalDeviceSuitable(Application& application, VkPhysicalDevice physicalDevice) {
-	application.renderer.indices = application.renderer.findQueueFamilies(application, physicalDevice);
+bool Renderer::isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice) {
+	indices = findQueueFamilies(physicalDevice);
 
-	bool extensionsSupported = application.renderer.checkPhysicalDeviceExtensionSupport(application, physicalDevice);
+	bool extensionsSupported = checkPhysicalDeviceExtensionSupport(physicalDevice);
 
 	bool swapChainAdequate = false;
 	
 	if (extensionsSupported) {
-		Swapchain::swapchainSupportDetails swapchainSupport = application.swapchain.querySwapchainSupport(application, physicalDevice);
+		Swapchain::swapchainSupportDetails swapchainSupport = swapchain.querySwapchainSupport(*application, physicalDevice);
 		swapChainAdequate = !swapchainSupport.surfaceFormats.empty() && !swapchainSupport.presentModes.empty();
 	}
 
-	return application.renderer.indices.isComplete() && extensionsSupported && swapChainAdequate;
+	return indices.isComplete() && extensionsSupported && swapChainAdequate;
 }
 
-bool Renderer::checkPhysicalDeviceExtensionSupport(Application& application, VkPhysicalDevice physicalDevice) {
+bool Renderer::checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice) {
 	uint32_t extensionCount;
 
 	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
@@ -696,7 +698,7 @@ bool Renderer::checkPhysicalDeviceExtensionSupport(Application& application, VkP
 	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 	vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, availableExtensions.data());
 	
-	std::set<std::string> requiredExtensions(application.renderer.deviceExtensions.begin(), application.renderer.deviceExtensions.end());
+	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
 
 	for (const auto &extension : availableExtensions) {
 		requiredExtensions.erase(extension.extensionName);
@@ -705,7 +707,7 @@ bool Renderer::checkPhysicalDeviceExtensionSupport(Application& application, VkP
 	return requiredExtensions.empty();
 }
 
-Renderer::queueFamilyIndices Renderer::findQueueFamilies(Application& application, VkPhysicalDevice physicalDevice) {
+Renderer::queueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice physicalDevice) {
 	Renderer::queueFamilyIndices indices;
 
 	uint32_t queueFamilyCount = 0;
@@ -722,7 +724,7 @@ Renderer::queueFamilyIndices Renderer::findQueueFamilies(Application& applicatio
 			//log_info("Graphics support found!");
 
 			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, application.renderer.surface, &presentSupport);
+			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, surface, &presentSupport);
 
 			if (presentSupport) {
 				indices.presentFamily = i;

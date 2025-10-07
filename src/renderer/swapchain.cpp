@@ -20,14 +20,14 @@ void Swapchain::cleanup(Application& application) {
 	log_info("Cleaning up swapchain...");
 
 	for (auto framebuffer : application.swapchain.framebuffers) {
-		vkDestroyFramebuffer(application.renderer.getDevice(application), framebuffer, nullptr);
+		vkDestroyFramebuffer(application.renderer.getDevice(), framebuffer, nullptr);
 	}
 
 	for (auto imageView : application.swapchain.imageViews) {
-		vkDestroyImageView(application.renderer.getDevice(application), imageView, nullptr);
+		vkDestroyImageView(application.renderer.getDevice(), imageView, nullptr);
 	}
 
-	vkDestroySwapchainKHR(application.renderer.getDevice(application), application.swapchain.swapchain, nullptr);
+	vkDestroySwapchainKHR(application.renderer.getDevice(), application.swapchain.swapchain, nullptr);
 
 	log_info("Cleaned up swapchain!");
 }
@@ -35,7 +35,7 @@ void Swapchain::cleanup(Application& application) {
 void Swapchain::createSwapchain(Application& application) {
 	Swapchain& swapchain = application.swapchain;
 
-	Swapchain::swapchainSupportDetails swapchainSupportDetails = swapchain.querySwapchainSupport(application, application.renderer.getPhysicalDevice(application));
+	Swapchain::swapchainSupportDetails swapchainSupportDetails = swapchain.querySwapchainSupport(application, application.renderer.getPhysicalDevice());
 
 	VkSurfaceFormatKHR surfaceFormat = swapchain.chooseSwapchainSurfaceFormat(swapchainSupportDetails.surfaceFormats);
 	VkPresentModeKHR presentMode = swapchain.chooseSwapchainPresentMode(swapchainSupportDetails.presentModes);
@@ -57,7 +57,7 @@ void Swapchain::createSwapchain(Application& application) {
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	Renderer::queueFamilyIndices indices = application.renderer.findQueueFamilies(application, application.renderer.getPhysicalDevice(application));
+	Renderer::queueFamilyIndices indices = application.renderer.findQueueFamilies(application.renderer.getPhysicalDevice());
 	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
 	if (indices.graphicsFamily != indices.presentFamily) {
@@ -77,7 +77,7 @@ void Swapchain::createSwapchain(Application& application) {
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	VkResult result = vkCreateSwapchainKHR(application.renderer.getDevice(application), &createInfo, nullptr, &swapchain.swapchain);
+	VkResult result = vkCreateSwapchainKHR(application.renderer.getDevice(), &createInfo, nullptr, &swapchain.swapchain);
 
 	if (result != VK_SUCCESS) {
 		log_error("Failed to create swapchain!");
@@ -86,9 +86,9 @@ void Swapchain::createSwapchain(Application& application) {
 		log_info("Successfully created swapchain!");
 	}
 
-	vkGetSwapchainImagesKHR(application.renderer.getDevice(application), swapchain.swapchain, &imageCount, nullptr);
+	vkGetSwapchainImagesKHR(application.renderer.getDevice(), swapchain.swapchain, &imageCount, nullptr);
 	swapchain.images.resize(imageCount);
-	vkGetSwapchainImagesKHR(application.renderer.getDevice(application), swapchain.swapchain, &imageCount, swapchain.images.data());
+	vkGetSwapchainImagesKHR(application.renderer.getDevice(), swapchain.swapchain, &imageCount, swapchain.images.data());
 
 	swapchain.imageFormat = surfaceFormat.format;
 	swapchain.imageExtent = swapChainExtent;
@@ -104,7 +104,7 @@ void Swapchain::recreateSwapchain(Application& application) {
 		glfwWaitEvents();
 	}
 
-	vkDeviceWaitIdle(application.renderer.getDevice(application));
+	vkDeviceWaitIdle(application.renderer.getDevice());
 
 	application.swapchain.cleanup(application);
 
@@ -132,7 +132,7 @@ void Swapchain::createImageViews(Application& application) {
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(application.renderer.getDevice(application), &createInfo, nullptr, &application.swapchain.imageViews[i]) != VK_SUCCESS) {
+		if (vkCreateImageView(application.renderer.getDevice(), &createInfo, nullptr, &application.swapchain.imageViews[i]) != VK_SUCCESS) {
 			log_error("failed to create image views!");
 		}
 	}
@@ -172,14 +172,14 @@ void Swapchain::createFramebuffers(Application& application) {
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = application.renderer.getRenderPass(application);
+		framebufferInfo.renderPass = application.renderer.getRenderPass();
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments = attachments;
 		framebufferInfo.width = application.swapchain.imageExtent.width;
 		framebufferInfo.height = application.swapchain.imageExtent.height;
 		framebufferInfo.layers = 1;
 
-		if (vkCreateFramebuffer(application.renderer.getDevice(application), &framebufferInfo, nullptr, &application.swapchain.framebuffers[i]) != VK_SUCCESS) {
+		if (vkCreateFramebuffer(application.renderer.getDevice(), &framebufferInfo, nullptr, &application.swapchain.framebuffers[i]) != VK_SUCCESS) {
 			log_error("Failed to create framebuffer!");
 		}
 	}

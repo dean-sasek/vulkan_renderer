@@ -17,19 +17,19 @@
 class Renderer {
 	public:
 		void init(Application& application);
-		void cleanup(Application& application);
+		void cleanup();
 		
-		VkRenderPass getRenderPass(Application& application);
+		VkRenderPass getRenderPass();
 
-		void drawFrame(Application& application);
+		void drawFrame();
 
 		VkSurfaceKHR surface;
 		bool framebufferResized = false;
 
 		Swapchain swapchain;
 
-		VkPhysicalDevice getPhysicalDevice(Application& application);
-		VkDevice getDevice(Application& application);
+		VkPhysicalDevice getPhysicalDevice();
+		VkDevice getDevice();
 
 		struct queueFamilyIndices {
 			std::optional<uint32_t> graphicsFamily;
@@ -41,8 +41,10 @@ class Renderer {
 		};
 
 		queueFamilyIndices indices;
-		queueFamilyIndices findQueueFamilies(Application& application, VkPhysicalDevice physicalDevice);
+		queueFamilyIndices findQueueFamilies(VkPhysicalDevice physicalDevice);
 	private:
+		Application* application = nullptr;
+
 		const int MAX_FRAMES_IN_FLIGHT = 2;
 
 		VkDevice device;
@@ -51,20 +53,20 @@ class Renderer {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
 
-		bool checkPhysicalDeviceExtensionSupport(Application& application, VkPhysicalDevice physicalDevice);
+		bool checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevice);
 
-		void createInstance(Application& application);
-		void createSurface(Application& application);
+		void createInstance();
+		void createSurface();
 
-		bool checkValidationLayerSupport(Application& application);
-		std::vector<const char*> getRequiredExtensions(Application& application);
+		bool checkValidationLayerSupport();
+		std::vector<const char*> getRequiredExtensions();
 
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
-		void setupDebugMessenger(Application& application);
+		void setupDebugMessenger();
 		VkDebugUtilsMessengerEXT debugMessenger = VK_NULL_HANDLE;
 		VkResult createDebugUtilsMessengerExt(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger);
 		void destroyDebugUtilsMessengerExt(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator);
-		void populateDebugMessengerCreateInfo(Application& application, VkDebugUtilsMessengerCreateInfoEXT createInfo);
+		void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT createInfo);
 
 		uint32_t glfwExtensionCount = 0;
 		const char** glfwExtensions = 0;
@@ -74,13 +76,13 @@ class Renderer {
 
 		VkInstance instance = VK_NULL_HANDLE;
 
-		void pickPhysicalDevice(Application& application);
-		bool isPhysicalDeviceSuitable(Application& application, VkPhysicalDevice physicalDevice);
+		void pickPhysicalDevice();
+		bool isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice);
 
-		void createLogicalDevice(Application& application);
+		void createLogicalDevice();
 
 		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-		void setPhysicalDevice(Application& application, VkPhysicalDevice physicalDevice);
+		void setPhysicalDevice(VkPhysicalDevice physicalDevice);
 
 		/*
 		void createSwapChain();
@@ -96,9 +98,9 @@ class Renderer {
 		void cleanupSwapChain();
 		*/
 
-		void createGraphicsPipeline(Application& application);
+		void createGraphicsPipeline();
 
-		VkShaderModule createShaderModule(Application& application, const std::vector<char>& shaderCode);
+		VkShaderModule createShaderModule(const std::vector<char>& shaderCode);
 	
 		//VkSurfaceFormatKHR chooseSwapChainSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		//VkPresentModeKHR chooseSwapChainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -107,21 +109,21 @@ class Renderer {
 		VkRenderPass renderPass;
 		VkPipeline graphicsPipeline;
 		VkPipelineLayout pipelineLayout;
-		void createRenderPass(Application& application);
+		void createRenderPass();
 
 		VkQueue graphicsQueue;
 		VkQueue presentQueue;
 
 		VkCommandPool commandPool;
 		std::vector<VkCommandBuffer> commandBuffers;
-		void createCommandPool(Application& application);
-		void createCommandBuffers(Application& application);
-		void recordCommandBuffer(Application& application, VkCommandBuffer commandBuffer, uint32_t imageIndex);
+		void createCommandPool();
+		void createCommandBuffers();
+		void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 
 		uint32_t currentFrame = 0;
 
 		std::vector<VkSemaphore> imageAvailableSemaphores;
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
-		void createSyncObjects(Application& application);
+		void createSyncObjects();
 };

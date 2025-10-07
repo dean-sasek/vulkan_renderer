@@ -25,7 +25,7 @@ void Application::loop() {
 	}
 
 	if (running) {
-		renderer.drawFrame(*this);
+		renderer.drawFrame();
 	}
 }
 
@@ -33,5 +33,5 @@ void Application::cleanup() {
 	running = false;
 
 	window.cleanup(*this);
-	renderer.cleanup(*this);
+	renderer.cleanup();
 }
