@@ -5,7 +5,7 @@ int main() {
 	Application application;
 
 	try {
-		application.init(application);
+		application.init();
 	}
 	catch (const std::runtime_error& e) {
 		log_error(e.what());

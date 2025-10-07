@@ -10,9 +10,9 @@
 
 class Application {
 	public:
-		void init(Application& application);
-		void loop(Application& application);
-		void cleanup(Application& application);
+		void init();
+		void loop();
+		void cleanup();
 
 		Renderer renderer;
 		Swapchain swapchain;

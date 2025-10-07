@@ -1,35 +1,37 @@
 #include "application.h"
 
-void Application::init(Application& application) {
+void Application::init() {
 	log_info("Initializing application...");
 
-	application.window.init(application);
-	application.renderer.init(application);
+	window.init(*this);
+	renderer.init(*this);
 
-	application.running = true;
+	log_info("Application initialized!");
 
-	while (application.running) {
-		application.loop(application);
+	running = true;
+
+	while (running) {
+		loop();
 	}
 }
 
-void Application::loop(Application& application) {
-	application.window.poll(application);
+void Application::loop() {
+	window.poll(*this);
 
-	if (application.window.shouldClose(application)) {
-		application.cleanup(application);
+	if (window.shouldClose(*this)) {
+		cleanup();
 
 		return;
 	}
 
-	if (application.running) {
-		application.renderer.drawFrame(application);
+	if (running) {
+		renderer.drawFrame(*this);
 	}
 }
 
-void Application::cleanup(Application& application) {
-	application.running = false;
+void Application::cleanup() {
+	running = false;
 
-	application.window.cleanup(application);
-	application.renderer.cleanup(application);
+	window.cleanup(*this);
+	renderer.cleanup(*this);
 }
