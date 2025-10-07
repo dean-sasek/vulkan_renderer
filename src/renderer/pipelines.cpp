@@ -74,6 +74,8 @@ VkPipeline Pipelines::createPipeline(const pipelineStructure pipelineStructure) 
 }
 
 VkPipelineLayout Pipelines::createPipelineLayout() {
+	log_info("Creating pipeline layout...");
+
 	VkPipelineLayout pipelineLayout;
 
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};

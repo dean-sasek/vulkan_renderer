@@ -18,6 +18,8 @@ void Shaders::compileShader(const std::string& glslcPath, const std::string& fil
 }
 
 VkShaderModule Shaders::createShaderModule(const std::vector<char>& shaderCode) {
+	log_info("Creating shader module...");
+
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	createInfo.codeSize = shaderCode.size();

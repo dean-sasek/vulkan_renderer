@@ -1,6 +1,32 @@
 #include "renderer.h"
 #include "../application/application.h"
 
+void Renderer::init(Application& application) {
+	log_info("Initializing renderer...");
+
+	this->application = &application;
+	this->application->swapchain.init(application);
+	this->application->pipelines.init(application);
+	this->application->shaders.init(application);
+	this->application->renderpass.init(application);
+
+	createInstance();
+	setupDebugMessenger();
+	createSurface();
+	pickPhysicalDevice();
+	createLogicalDevice();
+	this->application->swapchain.createSwapchain();
+	this->application->swapchain.createImageViews();
+	createRenderPass();
+	createGraphicsPipeline();
+	this->application->swapchain.createFramebuffers();
+	createCommandPool();
+	createCommandBuffers();
+	createSyncObjects();
+
+	log_info("Renderer initialized!");
+}
+
 void Renderer::setApplication(Application& application) {
 	this->application = &application;
 }
@@ -75,31 +101,6 @@ void Renderer::createLogicalDevice() {
 
 const VkRenderPass Renderer::getRenderPass() {
 	return renderPass;
-}
-
-void Renderer::init(Application& application) {
-	log_info("Initializing renderer...");
-
-	this->application = &application;
-	this->application->swapchain.init(application);
-	this->application->pipelines.init(application);
-	this->application->shaders.init(application);
-
-	createInstance();
-	setupDebugMessenger();
-	createSurface();
-	pickPhysicalDevice();
-	createLogicalDevice();
-	this->application->swapchain.createSwapchain();
-	this->application->swapchain.createImageViews();
-	createRenderPass();
-	createGraphicsPipeline();
-	this->application->swapchain.createFramebuffers();
-	createCommandPool();
-	createCommandBuffers();
-	createSyncObjects();
-
-	log_info("Renderer initialized!");
 }
 
 void Renderer::createGraphicsPipeline() {
@@ -185,48 +186,41 @@ void Renderer::createGraphicsPipeline() {
 }
 
 void Renderer::createRenderPass() {
-	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = application->swapchain.getImageFormat();
-	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	log_info("Creating render pass...");
 
-	VkAttachmentReference colorAttachmentReference{};
-	colorAttachmentReference.attachment = 0;
-	colorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	RenderPass::renderPassStructure renderPassStructure{};
 
-	VkSubpassDescription subpassDescription{};
-	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpassDescription.colorAttachmentCount = 1;
-	subpassDescription.pColorAttachments = &colorAttachmentReference;
+	renderPassStructure.attachmentDescription.format = application->swapchain.getImageFormat();
+	renderPassStructure.attachmentDescription.samples = VK_SAMPLE_COUNT_1_BIT;
+	renderPassStructure.attachmentDescription.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	renderPassStructure.attachmentDescription.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	renderPassStructure.attachmentDescription.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	renderPassStructure.attachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	renderPassStructure.attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	renderPassStructure.attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	VkSubpassDependency subpassDependency{};
-	subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	subpassDependency.dstSubpass = 0;
-	subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	renderPassStructure.attachmentReference.attachment = 0;
+	renderPassStructure.attachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-	VkRenderPassCreateInfo renderPassCreateInfo{};
-	renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassCreateInfo.attachmentCount = 1;
-	renderPassCreateInfo.pAttachments = &colorAttachment;
-	renderPassCreateInfo.subpassCount = 1;
-	renderPassCreateInfo.pSubpasses = &subpassDescription;
-	renderPassCreateInfo.dependencyCount = 1;
-	renderPassCreateInfo.pDependencies = &subpassDependency;
+	renderPassStructure.subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	renderPassStructure.subpassDescription.colorAttachmentCount = 1;
+	renderPassStructure.subpassDescription.pColorAttachments = &renderPassStructure.attachmentReference;
 
-	VkResult result = vkCreateRenderPass(device, &renderPassCreateInfo, nullptr, &renderPass);
+	renderPassStructure.subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	renderPassStructure.subpassDependency.dstSubpass = 0;
+	renderPassStructure.subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	renderPassStructure.subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-	if (result != VK_SUCCESS) {
-		log_error("Failed to create render pass!");
-	}
-	else {
-		log_info("Successfully created render pass!");
-	}
+	renderPassStructure.renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassStructure.renderPassCreateInfo.attachmentCount = 1;
+	renderPassStructure.renderPassCreateInfo.pAttachments = &renderPassStructure.attachmentDescription;
+	renderPassStructure.renderPassCreateInfo.subpassCount = 1;
+	renderPassStructure.renderPassCreateInfo.pSubpasses = &renderPassStructure.subpassDescription;
+	renderPassStructure.renderPassCreateInfo.dependencyCount = 1;
+	renderPassStructure.renderPassCreateInfo.pDependencies = &renderPassStructure.subpassDependency;
+
+	VkRenderPass newRenderPass = application->renderpass.createRenderPass(renderPassStructure);
+	renderPass = newRenderPass;
 }
 
 void Renderer::createCommandPool() {

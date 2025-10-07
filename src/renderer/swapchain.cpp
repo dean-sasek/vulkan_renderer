@@ -97,20 +97,22 @@ void Swapchain::createSwapchain() {
 		log_error("Failed to create swapchain!");
 	}
 	else {
+		vkGetSwapchainImagesKHR(application->renderer.getDevice(), swapchain.swapchain, &imageCount, nullptr);
+		swapchain.images.resize(imageCount);
+		vkGetSwapchainImagesKHR(application->renderer.getDevice(), swapchain.swapchain, &imageCount, swapchain.images.data());
+
+		swapchain.imageFormat = surfaceFormat.format;
+		swapchain.imageExtent = swapChainExtent;
+
+		application->swapchain = swapchain;
+
 		log_info("Successfully created swapchain!");
 	}
-
-	vkGetSwapchainImagesKHR(application->renderer.getDevice(), swapchain.swapchain, &imageCount, nullptr);
-	swapchain.images.resize(imageCount);
-	vkGetSwapchainImagesKHR(application->renderer.getDevice(), swapchain.swapchain, &imageCount, swapchain.images.data());
-
-	swapchain.imageFormat = surfaceFormat.format;
-	swapchain.imageExtent = swapChainExtent;
-
-	application->swapchain = swapchain;
 }
 
 void Swapchain::recreateSwapchain() {
+	log_info("Recreating swapchain...");
+
 	int width = 0, height = 0;
 	glfwGetFramebufferSize(application->window.glfwWindow, &width, &height);
 	while (width == 0 || height == 0) {
@@ -125,9 +127,13 @@ void Swapchain::recreateSwapchain() {
 	createSwapchain();
 	createImageViews();
 	createFramebuffers();
+
+	log_info("Recreated swapchain!");
 }
 
 void Swapchain::createImageViews() {
+	log_info("Creating image views...");
+
 	imageViews.resize(images.size());
 
 	for (size_t i = 0; i < images.size(); i++) {
@@ -146,13 +152,22 @@ void Swapchain::createImageViews() {
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(application->renderer.getDevice(), &createInfo, nullptr, &imageViews[i]) != VK_SUCCESS) {
-			log_error("failed to create image views!");
+		VkResult result = vkCreateImageView(application->renderer.getDevice(), &createInfo, nullptr, &imageViews[i]);
+
+
+
+		if (result != VK_SUCCESS) {
+			log_error("Failed to create image views!");
+		}
+		else {
+			log_info("Successfully created image views!");
 		}
 	}
 }
 
 Swapchain::swapchainSupportDetails Swapchain::querySwapchainSupport(Application& application, VkPhysicalDevice physicalDevice) {
+	log_info("Querying swapchain support...");
+	
 	swapchainSupportDetails swapchainSupportDetails;
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, application.renderer.surface, &swapchainSupportDetails.surfaceCapabilities);
@@ -177,6 +192,8 @@ Swapchain::swapchainSupportDetails Swapchain::querySwapchainSupport(Application&
 }
 
 void Swapchain::createFramebuffers() {
+	log_info("Creating framebuffers...");
+
 	framebuffers.resize(imageViews.size());
 
 	for (size_t i = 0; i < imageViews.size(); i++) {
@@ -193,8 +210,13 @@ void Swapchain::createFramebuffers() {
 		framebufferInfo.height = imageExtent.height;
 		framebufferInfo.layers = 1;
 
-		if (vkCreateFramebuffer(application->renderer.getDevice(), &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {
+		VkResult result = vkCreateFramebuffer(application->renderer.getDevice(), &framebufferInfo, nullptr, &framebuffers[i]);
+
+		if (result != VK_SUCCESS) {
 			log_error("Failed to create framebuffer!");
+		}
+		else {
+			log_info("Successfully created framebuffers!");
 		}
 	}
 }

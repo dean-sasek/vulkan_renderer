@@ -13,6 +13,7 @@
 #include "swapchain.h"
 #include "pipelines.h"
 #include "shaders/shaders.h"
+#include "render_pass.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR
 

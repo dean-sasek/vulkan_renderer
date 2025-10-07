@@ -18,6 +18,7 @@ class Application {
 		Swapchain swapchain;
 		Shaders shaders;
 		Pipelines pipelines;
+		RenderPass renderpass;
 		Window window;
 		Logger logger;
 		Input input;
