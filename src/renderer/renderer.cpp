@@ -5,7 +5,7 @@ void Renderer::setApplication(Application& application) {
 	this->application = &application;
 }
 
-VkPhysicalDevice Renderer::getPhysicalDevice() {
+const VkPhysicalDevice Renderer::getPhysicalDevice() {
 	return physicalDevice;
 }
 
@@ -73,7 +73,7 @@ void Renderer::createLogicalDevice() {
 	}
 }
 
-VkRenderPass Renderer::getRenderPass() {
+const VkRenderPass Renderer::getRenderPass() {
 	return renderPass;
 }
 
@@ -83,6 +83,7 @@ void Renderer::init(Application& application) {
 	this->application = &application;
 	this->application->swapchain.init(application);
 	this->application->pipelines.init(application);
+	this->application->shaders.init(application);
 
 	createInstance();
 	setupDebugMessenger();
@@ -182,26 +183,6 @@ void Renderer::createGraphicsPipeline() {
 
 	log_info("Successfully created graphics pipeline!");
 }
-
-VkShaderModule Renderer::createShaderModule(const std::vector<char>& shaderCode) {
-	VkShaderModuleCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	createInfo.codeSize = shaderCode.size();
-	createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
-
-	VkShaderModule shaderModule;
-
-	VkResult result = vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule);
-
-	if (result != VK_SUCCESS) {
-		log_error("Failed to create shader module!");
-	}
-	else {
-		log_info("Successfully created shader module!");
-
-		return shaderModule;
-	}
-};
 
 void Renderer::createRenderPass() {
 	VkAttachmentDescription colorAttachment{};
@@ -656,7 +637,7 @@ bool Renderer::checkPhysicalDeviceExtensionSupport(VkPhysicalDevice physicalDevi
 	return requiredExtensions.empty();
 }
 
-Renderer::queueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice physicalDevice) {
+const Renderer::queueFamilyIndices Renderer::findQueueFamilies(VkPhysicalDevice physicalDevice) {
 	Renderer::queueFamilyIndices indices;
 
 	uint32_t queueFamilyCount = 0;

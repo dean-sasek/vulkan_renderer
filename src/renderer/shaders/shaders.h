@@ -8,15 +8,19 @@
 #include <chrono>
 #include <filesystem>
 
+#include <vulkan/vulkan.h>
+
+class Application;
+
 class Shaders {
 	public:
-		void init();
+		void init(Application& application);
 		void poll();
 
 		void compileShader(const std::string& glslcPath, const std::string& filePath, const std::string& ouputPath);
-		void compileShaders(std::vector<std::string>& shaderPaths);
 
-		void createShaderModule(auto shaderCode);
+		VkShaderModule createShaderModule(const std::vector<char>& shaderCode);
+		void destroyShaderModule(VkShaderModule shaderModule);
 	private:
-
+		Application* application;
 };

@@ -15,8 +15,8 @@ VkPipeline Pipelines::createPipeline(const pipelineStructure pipelineStructure) 
 	auto vertexShaderCode = fileSystem.readFile(pipelineStructure.vertexShaderPath);
 	auto fragmentShaderCode = fileSystem.readFile(pipelineStructure.fragmentShaderPath);
 
-	VkShaderModule vertexShaderModule = application->renderer.createShaderModule(vertexShaderCode);
-	VkShaderModule fragmentShaderModule = application->renderer.createShaderModule(fragmentShaderCode);
+	VkShaderModule vertexShaderModule = application->shaders.createShaderModule(vertexShaderCode);
+	VkShaderModule fragmentShaderModule = application->shaders.createShaderModule(fragmentShaderCode);
 
 	VkPipelineShaderStageCreateInfo vertexShaderStageCreateInfo{};
 	vertexShaderStageCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -67,8 +67,8 @@ VkPipeline Pipelines::createPipeline(const pipelineStructure pipelineStructure) 
 		log_info("Successfully created pipeline!");
 	}
 
-	vkDestroyShaderModule(application->renderer.getDevice(), vertexShaderModule, nullptr);
-	vkDestroyShaderModule(application->renderer.getDevice(), fragmentShaderModule, nullptr);
+	application->shaders.destroyShaderModule(vertexShaderModule);
+	application->shaders.destroyShaderModule(fragmentShaderModule);
 
 	return pipeline;
 }

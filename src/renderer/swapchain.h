@@ -20,10 +20,10 @@ public:
 	void createImageViews();
 	void createFramebuffers();
 
-	VkFormat getImageFormat();
+	const VkFormat getImageFormat();
 	VkExtent2D getExtent();
 	std::vector<VkFramebuffer> getFramebuffers();
-	VkSwapchainKHR getSwapchain();
+	const VkSwapchainKHR getSwapchain();
 
 	struct swapchainSupportDetails {
 		VkSurfaceCapabilitiesKHR surfaceCapabilities;

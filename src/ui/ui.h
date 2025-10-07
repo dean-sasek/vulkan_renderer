@@ -19,4 +19,9 @@ class UI {
 
 		VkPipeline uiPipeline;
 		VkPipelineLayout uiPipelineLayout;
+
+		struct vertex2D {
+			glm::vec2 position;
+			glm::vec3 color;
+		};
 };

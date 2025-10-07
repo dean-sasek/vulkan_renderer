@@ -12,7 +12,7 @@ void Swapchain::setApplication(Application& application) {
 	this->application = &application;
 }
 
-VkFormat Swapchain::getImageFormat() {
+const VkFormat Swapchain::getImageFormat() {
 	return imageFormat;
 }
 
@@ -24,7 +24,7 @@ std::vector<VkFramebuffer> Swapchain::getFramebuffers() {
 	return framebuffers;
 }
 
-VkSwapchainKHR Swapchain::getSwapchain() {
+const VkSwapchainKHR Swapchain::getSwapchain() {
 	return swapchain;
 }
 

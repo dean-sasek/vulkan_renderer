@@ -12,6 +12,7 @@
 #include "vulkan/vulkan.h"
 #include "swapchain.h"
 #include "pipelines.h"
+#include "shaders/shaders.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR
 
@@ -20,7 +21,7 @@ class Renderer {
 		void init(Application& application);
 		void cleanup();
 		
-		VkRenderPass getRenderPass();
+		const VkRenderPass getRenderPass();
 
 		void drawFrame();
 
@@ -29,7 +30,7 @@ class Renderer {
 
 		Swapchain swapchain;
 
-		VkPhysicalDevice getPhysicalDevice();
+		const VkPhysicalDevice getPhysicalDevice();
 		VkDevice getDevice();
 
 		struct queueFamilyIndices {
@@ -42,7 +43,7 @@ class Renderer {
 		};
 
 		queueFamilyIndices indices;
-		queueFamilyIndices findQueueFamilies(VkPhysicalDevice physicalDevice);
+		const queueFamilyIndices findQueueFamilies(VkPhysicalDevice physicalDevice);
 
 
 		VkShaderModule createShaderModule(const std::vector<char>& shaderCode);
