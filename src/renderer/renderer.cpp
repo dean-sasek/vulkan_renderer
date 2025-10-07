@@ -102,6 +102,8 @@ void Renderer::init(Application& application) {
 }
 
 void Renderer::createGraphicsPipeline() {
+	log_info("Creating graphics pipeline...");
+
 	Pipelines::pipelineStructure pipelineStructure{};
 
 	pipelineStructure.vertexShaderPath = "src/renderer/shaders/vert.spv";
@@ -116,13 +118,6 @@ void Renderer::createGraphicsPipeline() {
 	pipelineStructure.inputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	pipelineStructure.inputAssemblyStateCreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	pipelineStructure.inputAssemblyStateCreateInfo.primitiveRestartEnable = VK_FALSE;
-
-	/*
-	VkPipelineViewportStateCreateInfo viewportStateCreateInfo{};
-	viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	viewportStateCreateInfo.viewportCount = 1;
-	viewportStateCreateInfo.scissorCount = 1;
-	*/
 
 	pipelineStructure.rasterizationStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	pipelineStructure.rasterizationStateCreateInfo.depthClampEnable = VK_FALSE;
@@ -173,21 +168,8 @@ void Renderer::createGraphicsPipeline() {
 	pipelineStructure.dynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
 	pipelineStructure.dynamicStateCreateInfo.pDynamicStates = dynamicStates.data();
 
-	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
-	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutCreateInfo.setLayoutCount = 0;
-	pipelineLayoutCreateInfo.pSetLayouts = nullptr;
-	pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
-	pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
-
-	VkResult pipelineLayoutResult = vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout);
-
-	if (pipelineLayoutResult != VK_SUCCESS) {
-		log_error("Failed to create graphics pipeline layout!");
-	}
-	else {
-		log_info("Successfully created graphics pipeline layout!");
-	}
+	VkPipelineLayout pipelineLayout = this->application->pipelines.createPipelineLayout();
+	graphicsPipelineLayout = pipelineLayout;
 
 	pipelineStructure.depthStencilStateCreateInfo = nullptr;
 
@@ -196,8 +178,9 @@ void Renderer::createGraphicsPipeline() {
 	pipelineStructure.subpass = 0;
 
 	VkPipeline pipeline = this->application->pipelines.createPipeline(pipelineStructure);
-
 	graphicsPipeline = pipeline;
+
+	log_info("Successfully created graphics pipeline!");
 }
 
 VkShaderModule Renderer::createShaderModule(const std::vector<char>& shaderCode) {
@@ -388,7 +371,7 @@ void Renderer::cleanup() {
 	application->swapchain.cleanup();
 
 	vkDestroyPipeline(device, graphicsPipeline, nullptr);
-	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+	vkDestroyPipelineLayout(device, graphicsPipelineLayout, nullptr);
 
 	vkDestroyRenderPass(device, renderPass, nullptr);
 

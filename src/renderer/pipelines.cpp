@@ -32,7 +32,6 @@ VkPipeline Pipelines::createPipeline(const pipelineStructure pipelineStructure) 
 
 	VkPipelineShaderStageCreateInfo shaderStages[] = { vertexShaderStageCreateInfo, fragmentShaderStageCreateInfo };
 
-
 	VkPipelineViewportStateCreateInfo viewportStateCreateInfo{};
 	viewportStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewportStateCreateInfo.viewportCount = 1;
@@ -72,6 +71,28 @@ VkPipeline Pipelines::createPipeline(const pipelineStructure pipelineStructure) 
 	vkDestroyShaderModule(application->renderer.getDevice(), fragmentShaderModule, nullptr);
 
 	return pipeline;
+}
+
+VkPipelineLayout Pipelines::createPipelineLayout() {
+	VkPipelineLayout pipelineLayout;
+
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{};
+	pipelineLayoutCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutCreateInfo.setLayoutCount = 0;
+	pipelineLayoutCreateInfo.pSetLayouts = nullptr;
+	pipelineLayoutCreateInfo.pushConstantRangeCount = 0;
+	pipelineLayoutCreateInfo.pPushConstantRanges = nullptr;
+
+	VkResult pipelineLayoutResult = vkCreatePipelineLayout(application->renderer.getDevice(), &pipelineLayoutCreateInfo, nullptr, &pipelineLayout);
+
+	if (pipelineLayoutResult != VK_SUCCESS) {
+		log_error("Failed to create pipeline layout!");
+	}
+	else {
+		log_info("Successfully created pipeline layout!");
+
+		return pipelineLayout;
+	}
 }
 
 void Pipelines::destroyPipeline(VkPipeline pipeline) {

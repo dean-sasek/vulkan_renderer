@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <glm/glm.hpp>
+#include <vulkan/vulkan.h>
 
 class Application;
 
@@ -13,4 +14,9 @@ class UI {
 		void cleanup();
 	private:
 		Application* application = nullptr;
+
+		void createUIPipeline();
+
+		VkPipeline uiPipeline;
+		VkPipelineLayout uiPipelineLayout;
 };

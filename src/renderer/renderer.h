@@ -89,29 +89,11 @@ class Renderer {
 		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 		void setPhysicalDevice(VkPhysicalDevice physicalDevice);
 
-		/*
-		void createSwapChain();
-		VkSwapchainKHR swapChain;
-		std::vector<VkImage> swapChainImages;
-		VkFormat swapChainImageFormat;
-		VkExtent2D swapChainExtent;
-		std::vector<VkImageView> swapChainImageViews;
-		void createImageViews();
-		std::vector<VkFramebuffer> swapChainFramebuffers;
-		void createFramebuffers();
-		void recreateSwapChain();
-		void cleanupSwapChain();
-		*/
-
 		void createGraphicsPipeline();
-	
-		//VkSurfaceFormatKHR chooseSwapChainSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-		//VkPresentModeKHR chooseSwapChainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-		//VkExtent2D chooseSwapChainExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 
 		VkRenderPass renderPass;
 		VkPipeline graphicsPipeline;
-		VkPipelineLayout pipelineLayout;
+		VkPipelineLayout graphicsPipelineLayout;
 		void createRenderPass();
 
 		VkQueue graphicsQueue;

@@ -35,6 +35,8 @@ class Pipelines {
 		};
 
 		VkPipeline createPipeline(const pipelineStructure pipelineStructure);
+		VkPipelineLayout createPipelineLayout();
+
 		void destroyPipeline(VkPipeline pipeline);
 	private:
 		Application* application = nullptr;
