@@ -14,5 +14,5 @@ void UI::init(Application& application) {
 void UI::cleanup() {
 	log_info("Cleaning up UI...");
 
-	log_info("UI cleaned up!...");
+	log_info("UI cleaned up!");
 }

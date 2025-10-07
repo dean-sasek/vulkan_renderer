@@ -80,8 +80,9 @@ VkRenderPass Renderer::getRenderPass() {
 void Renderer::init(Application& application) {
 	log_info("Initializing renderer...");
 
-	setApplication(*&application);
+	this->application = &application;
 	this->application->swapchain.init(application);
+	this->application->pipelines.init(application);
 
 	createInstance();
 	setupDebugMessenger();
@@ -101,6 +102,8 @@ void Renderer::init(Application& application) {
 }
 
 void Renderer::createGraphicsPipeline() {
+	Pipelines::pipelineStructure pipelineStructure{};
+
 	auto vertexShaderCode = fileSystem.readFile("src/renderer/shaders/vert.spv");
 	auto fragmentShaderCode = fileSystem.readFile("src/renderer/shaders/frag.spv");
 

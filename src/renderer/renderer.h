@@ -11,6 +11,7 @@
 
 #include "vulkan/vulkan.h"
 #include "swapchain.h"
+#include "pipelines.h"
 
 #define VK_USE_PLATFORM_WIN32_KHR
 

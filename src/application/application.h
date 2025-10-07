@@ -3,7 +3,6 @@
 
 #include "../../src/window/window.h"
 #include "../../src/renderer/renderer.h"
-#include "../../src/renderer/swapchain.h"
 #include "../../src/logger/logger.h"
 #include "../../src/input/input.h"
 #include "../../src/file_system/file_system.h"
@@ -17,6 +16,7 @@ class Application {
 
 		Renderer renderer;
 		Swapchain swapchain;
+		Pipelines pipelines;
 		Window window;
 		Logger logger;
 		Input input;
