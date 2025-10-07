@@ -47,7 +47,7 @@ VkPipeline Pipelines::createPipeline(const pipelineStructure pipelineStructure) 
 	graphicsPipelineCreateInfo.pViewportState = &viewportStateCreateInfo;
 	graphicsPipelineCreateInfo.pRasterizationState = &pipelineStructure.rasterizationStateCreateInfo;
 	graphicsPipelineCreateInfo.pMultisampleState = &pipelineStructure.multisampleStateCreateInfo;
-	graphicsPipelineCreateInfo.pDepthStencilState = &pipelineStructure.depthStencilStateCreateInfo;
+	graphicsPipelineCreateInfo.pDepthStencilState = pipelineStructure.depthStencilStateCreateInfo;
 	graphicsPipelineCreateInfo.pColorBlendState = &pipelineStructure.colorBlendStateCreateInfo;
 	graphicsPipelineCreateInfo.pDynamicState = &pipelineStructure.dynamicStateCreateInfo;
 	graphicsPipelineCreateInfo.layout = pipelineStructure.pipelineLayout;

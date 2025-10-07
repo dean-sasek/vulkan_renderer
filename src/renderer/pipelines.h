@@ -22,8 +22,9 @@ class Pipelines {
 			VkPipelineViewportStateCreateInfo viewportStateCreateInfo;
 			VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo;
 			VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo;
+			VkPipelineColorBlendAttachmentState colorBlendAttachmentStateCreateInfo;
 			VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo;
-			VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo;
+			VkPipelineDepthStencilStateCreateInfo* depthStencilStateCreateInfo;
 			VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo;
 
 			VkPipelineLayout pipelineLayout;
