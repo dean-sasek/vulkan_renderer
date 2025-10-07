@@ -409,9 +409,7 @@ void Renderer::drawFrame() {
 		log_error("Failed to acquire swap chain image!");
 	}
 
-	application->ui.clearVertices();
-	application->ui.drawBox(10, 50, 300, 50);
-	application->ui.drawBox(150, 10, 100, 50);
+	application->ui.drawUI();
 
 	vkResetFences(device, 1, &inFlightFences[currentFrame]);
 

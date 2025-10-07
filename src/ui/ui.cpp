@@ -17,6 +17,12 @@ void UI::init(Application& application) {
 	log_info("UI initialized!");
 }
 
+void UI::drawUI() {
+	application->ui.clearVertices();
+
+	application->ui.drawBox(500, 200, 300, 50);
+}
+
 void UI::clearVertices() {
 	vertices.clear();
 }

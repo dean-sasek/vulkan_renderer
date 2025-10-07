@@ -14,6 +14,7 @@ class UI {
 		void cleanup();
 		void render(VkCommandBuffer commandBuffer);
 
+		void drawUI();
 		void drawBox(float x, float y, float width, float height);
 
 		void createVertexBuffer(size_t bufferSize);
