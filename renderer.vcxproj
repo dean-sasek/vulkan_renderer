@@ -184,8 +184,13 @@
     <ClInclude Include="src\window\window.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\renderer\shaders\compile.bat" />
+    <None Include="src\renderer\shaders\frag.spv" />
     <None Include="src\renderer\shaders\shader.frag" />
     <None Include="src\renderer\shaders\shader.vert" />
+    <None Include="src\renderer\shaders\ui.frag" />
+    <None Include="src\renderer\shaders\ui.vert" />
+    <None Include="src\renderer\shaders\vert.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

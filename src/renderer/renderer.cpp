@@ -27,6 +27,25 @@ void Renderer::init(Application& application) {
 	log_info("Renderer initialized!");
 }
 
+std::vector<VkCommandBuffer> Renderer::getCommandBuffers() {
+	return commandBuffers;
+}
+
+uint32_t Renderer::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+	VkPhysicalDeviceMemoryProperties memoryProperties;
+	vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memoryProperties);
+
+	for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
+		if ((typeFilter & (1 << i)) && (memoryProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+			log_info("Found suitable memory type!");
+
+			return i;
+		}
+	}
+
+	log_error("Failed to find suitable memory type!");
+}
+
 void Renderer::setApplication(Application& application) {
 	this->application = &application;
 }
@@ -303,6 +322,8 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 
 	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
+	application->ui.render(commandBuffer);
+
 	vkCmdEndRenderPass(commandBuffer);
 
 	VkResult commandBufferResult = vkEndCommandBuffer(commandBuffer);
@@ -387,6 +408,10 @@ void Renderer::drawFrame() {
 	else if (acquireNextImageResult != VK_SUCCESS) {
 		log_error("Failed to acquire swap chain image!");
 	}
+
+	application->ui.clearVertices();
+	application->ui.drawBox(10, 50, 300, 50);
+	application->ui.drawBox(150, 10, 100, 50);
 
 	vkResetFences(device, 1, &inFlightFences[currentFrame]);
 

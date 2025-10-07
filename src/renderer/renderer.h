@@ -33,6 +33,7 @@ class Renderer {
 
 		const VkPhysicalDevice getPhysicalDevice();
 		VkDevice getDevice();
+		std::vector<VkCommandBuffer> getCommandBuffers();
 
 		struct queueFamilyIndices {
 			std::optional<uint32_t> graphicsFamily;
@@ -42,6 +43,8 @@ class Renderer {
 				return graphicsFamily.has_value() && presentFamily.has_value();
 			}
 		};
+
+		uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
 		queueFamilyIndices indices;
 		const queueFamilyIndices findQueueFamilies(VkPhysicalDevice physicalDevice);
