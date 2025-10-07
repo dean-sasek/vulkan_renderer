@@ -44,6 +44,7 @@ class Renderer {
 		queueFamilyIndices findQueueFamilies(VkPhysicalDevice physicalDevice);
 	private:
 		Application* application = nullptr;
+		void setApplication(Application& application);
 
 		const int MAX_FRAMES_IN_FLIGHT = 2;
 

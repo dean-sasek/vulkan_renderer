@@ -1,45 +1,57 @@
 #include "../application/application.h"
 
-VkFormat Swapchain::getImageFormat(Application& application) {
-	return application.swapchain.imageFormat;
+void Swapchain::init(Application& application) {
+	log_info("Initializing swapchain...");
+
+	setApplication(application);
+
+	log_info("Swapchain initialized!");
 }
 
-VkExtent2D Swapchain::getExtent(Application& application) {
-	return application.swapchain.imageExtent;
+void Swapchain::setApplication(Application& application) {
+	this->application = &application;
 }
 
-std::vector<VkFramebuffer> Swapchain::getFramebuffers(Application& application) {
-	return application.swapchain.framebuffers;
+VkFormat Swapchain::getImageFormat() {
+	return imageFormat;
 }
 
-VkSwapchainKHR Swapchain::getSwapchain(Application& application) {
-	return application.swapchain.swapchain;
+VkExtent2D Swapchain::getExtent() {
+	return imageExtent;
 }
 
-void Swapchain::cleanup(Application& application) {
+std::vector<VkFramebuffer> Swapchain::getFramebuffers() {
+	return framebuffers;
+}
+
+VkSwapchainKHR Swapchain::getSwapchain() {
+	return swapchain;
+}
+
+void Swapchain::cleanup() {
 	log_info("Cleaning up swapchain...");
 
-	for (auto framebuffer : application.swapchain.framebuffers) {
-		vkDestroyFramebuffer(application.renderer.getDevice(), framebuffer, nullptr);
+	for (auto framebuffer : framebuffers) {
+		vkDestroyFramebuffer(application->renderer.getDevice(), framebuffer, nullptr);
 	}
 
-	for (auto imageView : application.swapchain.imageViews) {
-		vkDestroyImageView(application.renderer.getDevice(), imageView, nullptr);
+	for (auto imageView : imageViews) {
+		vkDestroyImageView(application->renderer.getDevice(), imageView, nullptr);
 	}
 
-	vkDestroySwapchainKHR(application.renderer.getDevice(), application.swapchain.swapchain, nullptr);
+	vkDestroySwapchainKHR(application->renderer.getDevice(), swapchain, nullptr);
 
 	log_info("Cleaned up swapchain!");
 }
 
-void Swapchain::createSwapchain(Application& application) {
-	Swapchain& swapchain = application.swapchain;
+void Swapchain::createSwapchain() {
+	Swapchain& swapchain = application->swapchain;
 
-	Swapchain::swapchainSupportDetails swapchainSupportDetails = swapchain.querySwapchainSupport(application, application.renderer.getPhysicalDevice());
-
+	Swapchain::swapchainSupportDetails swapchainSupportDetails = swapchain.querySwapchainSupport(*application, application->renderer.getPhysicalDevice());
+	
 	VkSurfaceFormatKHR surfaceFormat = swapchain.chooseSwapchainSurfaceFormat(swapchainSupportDetails.surfaceFormats);
 	VkPresentModeKHR presentMode = swapchain.chooseSwapchainPresentMode(swapchainSupportDetails.presentModes);
-	VkExtent2D swapChainExtent = swapchain.chooseSwapchainExtent(application, swapchainSupportDetails.surfaceCapabilities);
+	VkExtent2D swapChainExtent = swapchain.chooseSwapchainExtent(swapchainSupportDetails.surfaceCapabilities);
 
 	uint32_t imageCount = swapchainSupportDetails.surfaceCapabilities.minImageCount + 1;
 
@@ -49,7 +61,7 @@ void Swapchain::createSwapchain(Application& application) {
 
 	VkSwapchainCreateInfoKHR createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	createInfo.surface = application.renderer.surface;
+	createInfo.surface = application->renderer.surface;
 	createInfo.minImageCount = imageCount;
 	createInfo.imageFormat = surfaceFormat.format;
 	createInfo.imageColorSpace = surfaceFormat.colorSpace;
@@ -57,7 +69,7 @@ void Swapchain::createSwapchain(Application& application) {
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	Renderer::queueFamilyIndices indices = application.renderer.findQueueFamilies(application.renderer.getPhysicalDevice());
+	Renderer::queueFamilyIndices indices = application->renderer.findQueueFamilies(application->renderer.getPhysicalDevice());
 	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
 	if (indices.graphicsFamily != indices.presentFamily) {
@@ -77,7 +89,7 @@ void Swapchain::createSwapchain(Application& application) {
 	createInfo.clipped = VK_TRUE;
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-	VkResult result = vkCreateSwapchainKHR(application.renderer.getDevice(), &createInfo, nullptr, &swapchain.swapchain);
+	VkResult result = vkCreateSwapchainKHR(application->renderer.getDevice(), &createInfo, nullptr, &swapchain.swapchain);
 
 	if (result != VK_SUCCESS) {
 		log_error("Failed to create swapchain!");
@@ -86,42 +98,42 @@ void Swapchain::createSwapchain(Application& application) {
 		log_info("Successfully created swapchain!");
 	}
 
-	vkGetSwapchainImagesKHR(application.renderer.getDevice(), swapchain.swapchain, &imageCount, nullptr);
+	vkGetSwapchainImagesKHR(application->renderer.getDevice(), swapchain.swapchain, &imageCount, nullptr);
 	swapchain.images.resize(imageCount);
-	vkGetSwapchainImagesKHR(application.renderer.getDevice(), swapchain.swapchain, &imageCount, swapchain.images.data());
+	vkGetSwapchainImagesKHR(application->renderer.getDevice(), swapchain.swapchain, &imageCount, swapchain.images.data());
 
 	swapchain.imageFormat = surfaceFormat.format;
 	swapchain.imageExtent = swapChainExtent;
 
-	application.swapchain = swapchain;
+	application->swapchain = swapchain;
 }
 
-void Swapchain::recreateSwapchain(Application& application) {
+void Swapchain::recreateSwapchain() {
 	int width = 0, height = 0;
-	glfwGetFramebufferSize(application.window.glfwWindow, &width, &height);
+	glfwGetFramebufferSize(application->window.glfwWindow, &width, &height);
 	while (width == 0 || height == 0) {
-		glfwGetFramebufferSize(application.window.glfwWindow, &width, &height);
+		glfwGetFramebufferSize(application->window.glfwWindow, &width, &height);
 		glfwWaitEvents();
 	}
 
-	vkDeviceWaitIdle(application.renderer.getDevice());
+	vkDeviceWaitIdle(application->renderer.getDevice());
 
-	application.swapchain.cleanup(application);
+	cleanup();
 
-	application.swapchain.createSwapchain(application);
-	application.swapchain.createImageViews(application);
-	application.swapchain.createFramebuffers(application);
+	createSwapchain();
+	createImageViews();
+	createFramebuffers();
 }
 
-void Swapchain::createImageViews(Application& application) {
-	application.swapchain.imageViews.resize(application.swapchain.images.size());
+void Swapchain::createImageViews() {
+	imageViews.resize(images.size());
 
-	for (size_t i = 0; i < application.swapchain.images.size(); i++) {
+	for (size_t i = 0; i < images.size(); i++) {
 		VkImageViewCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		createInfo.image = application.swapchain.images[i];
+		createInfo.image = images[i];
 		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		createInfo.format = application.swapchain.imageFormat;
+		createInfo.format = imageFormat;
 		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
 		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -132,14 +144,14 @@ void Swapchain::createImageViews(Application& application) {
 		createInfo.subresourceRange.baseArrayLayer = 0;
 		createInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(application.renderer.getDevice(), &createInfo, nullptr, &application.swapchain.imageViews[i]) != VK_SUCCESS) {
+		if (vkCreateImageView(application->renderer.getDevice(), &createInfo, nullptr, &imageViews[i]) != VK_SUCCESS) {
 			log_error("failed to create image views!");
 		}
 	}
 }
 
 Swapchain::swapchainSupportDetails Swapchain::querySwapchainSupport(Application& application, VkPhysicalDevice physicalDevice) {
-	Swapchain::swapchainSupportDetails swapchainSupportDetails;
+	swapchainSupportDetails swapchainSupportDetails;
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, application.renderer.surface, &swapchainSupportDetails.surfaceCapabilities);
 
@@ -162,24 +174,24 @@ Swapchain::swapchainSupportDetails Swapchain::querySwapchainSupport(Application&
 	return swapchainSupportDetails;
 }
 
-void Swapchain::createFramebuffers(Application& application) {
-	application.swapchain.framebuffers.resize(application.swapchain.imageViews.size());
+void Swapchain::createFramebuffers() {
+	framebuffers.resize(imageViews.size());
 
-	for (size_t i = 0; i < application.swapchain.imageViews.size(); i++) {
+	for (size_t i = 0; i < imageViews.size(); i++) {
 		VkImageView attachments[] = {
-			application.swapchain.imageViews[i]
+			imageViews[i]
 		};
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass = application.renderer.getRenderPass();
+		framebufferInfo.renderPass = application->renderer.getRenderPass();
 		framebufferInfo.attachmentCount = 1;
 		framebufferInfo.pAttachments = attachments;
-		framebufferInfo.width = application.swapchain.imageExtent.width;
-		framebufferInfo.height = application.swapchain.imageExtent.height;
+		framebufferInfo.width = imageExtent.width;
+		framebufferInfo.height = imageExtent.height;
 		framebufferInfo.layers = 1;
 
-		if (vkCreateFramebuffer(application.renderer.getDevice(), &framebufferInfo, nullptr, &application.swapchain.framebuffers[i]) != VK_SUCCESS) {
+		if (vkCreateFramebuffer(application->renderer.getDevice(), &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {
 			log_error("Failed to create framebuffer!");
 		}
 	}
@@ -205,7 +217,7 @@ VkPresentModeKHR Swapchain::chooseSwapchainPresentMode(const std::vector<VkPrese
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D Swapchain::chooseSwapchainExtent(Application& application, const VkSurfaceCapabilitiesKHR& surfaceCapabilities) {
+VkExtent2D Swapchain::chooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities) {
 	#ifdef max
 	#undef max
 	#endif
@@ -215,7 +227,7 @@ VkExtent2D Swapchain::chooseSwapchainExtent(Application& application, const VkSu
 	}
 	else {
 		int width, height;
-		glfwGetFramebufferSize(application.window.glfwWindow, &width, &height);
+		glfwGetFramebufferSize(application->window.glfwWindow, &width, &height);
 
 		VkExtent2D actualExtent = {
 			static_cast<uint32_t>(width),

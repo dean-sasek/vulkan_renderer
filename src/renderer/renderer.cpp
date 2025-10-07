@@ -1,6 +1,10 @@
 #include "renderer.h"
 #include "../application/application.h"
 
+void Renderer::setApplication(Application& application) {
+	this->application = &application;
+}
+
 VkPhysicalDevice Renderer::getPhysicalDevice() {
 	return physicalDevice;
 }
@@ -76,18 +80,19 @@ VkRenderPass Renderer::getRenderPass() {
 void Renderer::init(Application& application) {
 	log_info("Initializing renderer...");
 
-	this->application = &application;
+	setApplication(*&application);
+	this->application->swapchain.init(application);
 
 	createInstance();
 	setupDebugMessenger();
 	createSurface();
 	pickPhysicalDevice();
 	createLogicalDevice();
-	swapchain.createSwapchain(application);
-	swapchain.createImageViews(application);
+	this->application->swapchain.createSwapchain();
+	this->application->swapchain.createImageViews();
 	createRenderPass();
 	createGraphicsPipeline();
-	swapchain.createFramebuffers(application);
+	this->application->swapchain.createFramebuffers();
 	createCommandPool();
 	createCommandBuffers();
 	createSyncObjects();
@@ -256,7 +261,7 @@ VkShaderModule Renderer::createShaderModule(const std::vector<char>& shaderCode)
 
 void Renderer::createRenderPass() {
 	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = application->swapchain.getImageFormat(*application);
+	colorAttachment.format = application->swapchain.getImageFormat();
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -351,9 +356,9 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	VkRenderPassBeginInfo renderPassBeginInfo{};
 	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	renderPassBeginInfo.renderPass = renderPass;
-	renderPassBeginInfo.framebuffer = swapchain.getFramebuffers(*application)[imageIndex];
+	renderPassBeginInfo.framebuffer = application->swapchain.getFramebuffers()[imageIndex];
 	renderPassBeginInfo.renderArea.offset = { 0, 0 };
-	renderPassBeginInfo.renderArea.extent = swapchain.getExtent(*application);
+	renderPassBeginInfo.renderArea.extent = application->swapchain.getExtent();
 
 	VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 	renderPassBeginInfo.clearValueCount = 1;
@@ -366,15 +371,15 @@ void Renderer::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t image
 	VkViewport viewport{};
 	viewport.x = 0.0f;
 	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(swapchain.getExtent(*application).width);
-	viewport.height = static_cast<float>(swapchain.getExtent(*application).height);
+	viewport.width = static_cast<float>(application->swapchain.getExtent().width);
+	viewport.height = static_cast<float>(application->swapchain.getExtent().height);
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 	VkRect2D scissor{};
 	scissor.offset = { 0, 0 };
-	scissor.extent = swapchain.getExtent(*application);
+	scissor.extent = application->swapchain.getExtent();
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 	vkCmdDraw(commandBuffer, 3, 1, 0, 0);
@@ -419,7 +424,7 @@ void Renderer::cleanup() {
 
 	vkDeviceWaitIdle(device);
 
-	swapchain.cleanup(*application);
+	application->swapchain.cleanup();
 
 	vkDestroyPipeline(device, graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
@@ -450,11 +455,11 @@ void Renderer::drawFrame() {
 	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
 
 	uint32_t imageIndex;
-	VkResult acquireNextImageResult = vkAcquireNextImageKHR(device, swapchain.getSwapchain(*application), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+	VkResult acquireNextImageResult = vkAcquireNextImageKHR(device, application->swapchain.getSwapchain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
 	if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR || acquireNextImageResult == VK_SUBOPTIMAL_KHR || framebufferResized) {
 		framebufferResized = false;
-		swapchain.recreateSwapchain(*application);
+		application->swapchain.recreateSwapchain();
 
 		log_info("Swap chain out of date, recreating...");
 
@@ -497,7 +502,7 @@ void Renderer::drawFrame() {
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
 
-	VkSwapchainKHR swapChains[] = { swapchain.getSwapchain(*application)};
+	VkSwapchainKHR swapChains[] = { application->swapchain.getSwapchain()};
 	
 	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
@@ -683,7 +688,7 @@ bool Renderer::isPhysicalDeviceSuitable(VkPhysicalDevice physicalDevice) {
 	bool swapChainAdequate = false;
 	
 	if (extensionsSupported) {
-		Swapchain::swapchainSupportDetails swapchainSupport = swapchain.querySwapchainSupport(*application, physicalDevice);
+		Swapchain::swapchainSupportDetails swapchainSupport = application->swapchain.querySwapchainSupport(*application, physicalDevice);
 		swapChainAdequate = !swapchainSupport.surfaceFormats.empty() && !swapchainSupport.presentModes.empty();
 	}
 

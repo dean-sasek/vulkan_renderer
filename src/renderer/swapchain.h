@@ -10,18 +10,20 @@ class Application;
 
 class Swapchain {
 public:
-	void cleanup(Application& application);
+	void init(Application& application);
 
-	void createSwapchain(Application& application);
-	void recreateSwapchain(Application& application);
+	void cleanup();
 
-	void createImageViews(Application& application);
-	void createFramebuffers(Application& application);
+	void createSwapchain();
+	void recreateSwapchain();
 
-	VkFormat getImageFormat(Application& application);
-	VkExtent2D getExtent(Application& application);
-	std::vector<VkFramebuffer> getFramebuffers(Application& application);
-	VkSwapchainKHR getSwapchain(Application& application);
+	void createImageViews();
+	void createFramebuffers();
+
+	VkFormat getImageFormat();
+	VkExtent2D getExtent();
+	std::vector<VkFramebuffer> getFramebuffers();
+	VkSwapchainKHR getSwapchain();
 
 	struct swapchainSupportDetails {
 		VkSurfaceCapabilitiesKHR surfaceCapabilities;
@@ -31,6 +33,9 @@ public:
 
 	swapchainSupportDetails querySwapchainSupport(Application& application, VkPhysicalDevice physicalDevice);
 private:
+	Application* application = nullptr;
+	void setApplication(Application& application);
+
 	VkSwapchainKHR swapchain;
 	std::vector<VkImage> images;
 	std::vector<VkImageView> imageViews;
@@ -41,5 +46,5 @@ private:
 
 	VkSurfaceFormatKHR chooseSwapchainSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 	VkPresentModeKHR chooseSwapchainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-	VkExtent2D chooseSwapchainExtent(Application& application, const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
+	VkExtent2D chooseSwapchainExtent(const VkSurfaceCapabilitiesKHR& surfaceCapabilities);
 };
