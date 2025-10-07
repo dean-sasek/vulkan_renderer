@@ -163,6 +163,7 @@
     <ClCompile Include="src\logger\logger.cpp" />
     <ClCompile Include="src\renderer\renderer.cpp" />
     <ClCompile Include="src\renderer\swapchain.cpp" />
+    <ClCompile Include="src\ui\ui.cpp" />
     <ClCompile Include="src\window\window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -173,6 +174,7 @@
     <ClInclude Include="src\logger\logger.h" />
     <ClInclude Include="src\renderer\renderer.h" />
     <ClInclude Include="src\renderer\swapchain.h" />
+    <ClInclude Include="src\ui\ui.h" />
     <ClInclude Include="src\window\window.h" />
   </ItemGroup>
   <ItemGroup>
