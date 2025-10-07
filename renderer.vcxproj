@@ -161,7 +161,9 @@
     <ClCompile Include="src\input\input.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="src\logger\logger.cpp" />
+    <ClCompile Include="src\renderer\pipelines.cpp" />
     <ClCompile Include="src\renderer\renderer.cpp" />
+    <ClCompile Include="src\renderer\shaders\shaders.cpp" />
     <ClCompile Include="src\renderer\swapchain.cpp" />
     <ClCompile Include="src\ui\ui.cpp" />
     <ClCompile Include="src\window\window.cpp" />
@@ -172,7 +174,9 @@
     <ClInclude Include="src\input\input.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="src\logger\logger.h" />
+    <ClInclude Include="src\renderer\pipelines.h" />
     <ClInclude Include="src\renderer\renderer.h" />
+    <ClInclude Include="src\renderer\shaders\shaders.h" />
     <ClInclude Include="src\renderer\swapchain.h" />
     <ClInclude Include="src\ui\ui.h" />
     <ClInclude Include="src\window\window.h" />

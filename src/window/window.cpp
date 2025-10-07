@@ -16,8 +16,6 @@ void Window::init(Application& application) {
 }
 
 void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-	log_info("Framebuffer resized!");
-
 	auto renderer = reinterpret_cast<Renderer*>(glfwGetWindowUserPointer(window));
 	renderer->framebufferResized = true;
 }

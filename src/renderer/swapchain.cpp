@@ -45,6 +45,8 @@ void Swapchain::cleanup() {
 }
 
 void Swapchain::createSwapchain() {
+	log_info("Creating swapchain...");
+
 	Swapchain& swapchain = application->swapchain;
 
 	Swapchain::swapchainSupportDetails swapchainSupportDetails = swapchain.querySwapchainSupport(*application, application->renderer.getPhysicalDevice());

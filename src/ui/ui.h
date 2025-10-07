@@ -1,9 +1,16 @@
 #pragma once
 #define ui_h
 
+#include <vector>
+
+#include <glm/glm.hpp>
+
+class Application;
+
 class UI {
 	public:
-		void init();
+		void init(Application& application);
 		void cleanup();
 	private:
-};;
+		Application* application = nullptr;
+};

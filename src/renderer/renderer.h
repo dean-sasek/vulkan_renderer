@@ -42,6 +42,9 @@ class Renderer {
 
 		queueFamilyIndices indices;
 		queueFamilyIndices findQueueFamilies(VkPhysicalDevice physicalDevice);
+
+
+		VkShaderModule createShaderModule(const std::vector<char>& shaderCode);
 	private:
 		Application* application = nullptr;
 		void setApplication(Application& application);
@@ -100,8 +103,6 @@ class Renderer {
 		*/
 
 		void createGraphicsPipeline();
-
-		VkShaderModule createShaderModule(const std::vector<char>& shaderCode);
 	
 		//VkSurfaceFormatKHR chooseSwapChainSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		//VkPresentModeKHR chooseSwapChainPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);

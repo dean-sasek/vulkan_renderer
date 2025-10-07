@@ -201,10 +201,10 @@ void Renderer::createGraphicsPipeline() {
 	VkResult pipelineLayoutResult = vkCreatePipelineLayout(device, &pipelineLayoutCreateInfo, nullptr, &pipelineLayout);
 
 	if (pipelineLayoutResult != VK_SUCCESS) {
-		log_error("Failed to create pipeline layout!");
+		log_error("Failed to create graphics pipeline layout!");
 	}
 	else {
-		log_info("Successfully created pipeline layout!");
+		log_info("Successfully created graphics pipeline layout!");
 	}
 
 	VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo{};

@@ -3,6 +3,7 @@
 void Application::init() {
 	log_info("Initializing application...");
 
+	ui.init(*this);
 	window.init(*this);
 	renderer.init(*this);
 
